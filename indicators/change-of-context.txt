@@ -1,0 +1,134 @@
+// This Pine Script® code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © elroyvanouwerkerk
+
+//@version=6
+indicator("My script")
+plot(close)
+//@version=6
+indicator("Change of Context", shorttitle="Change of Context", overlay=true, max_labels_count=500)
+
+// ===== Symbols & Inputs (similar to Cherry on Top) =====
+// Bearish marker settings
+bearSym = input.string("▼", "Bearish Symbol", options = ["▼","▲","★","●","◆","■","✖","✚"])
+bearCol = input.color(color.new(color.red, 0), "Bearish Symbol Color")
+bearLoc = input.string("Above bar", "Bearish Symbol Location", options = ["Above bar", "Below bar"])
+
+// Bullish marker settings
+bullSym = input.string("▲", "Bullish Symbol", options = ["▲","▼","★","●","◆","■","✖","✚"])
+bullCol = input.color(color.new(color.lime, 0), "Bullish Symbol Color")
+bullLoc = input.string("Below bar", "Bullish Symbol Location", options = ["Above bar", "Below bar"])
+
+// Marker size (use const size enums via gated calls)
+sizeOpt     = input.string("Small", "Marker Size", options = ["Tiny","Small","Normal","Large","Very Large"])
+isTiny      = sizeOpt == "Tiny"
+isSmall     = sizeOpt == "Small"
+isNormal    = sizeOpt == "Normal"
+isLarge     = sizeOpt == "Large"
+isVeryLarge = sizeOpt == "Very Large"
+
+// ===== Optional Divisions Filter =====
+useDivisions = input.bool(false, "Use Divisions Filter", tooltip="When enabled, Candle 2 must also close in the lower division (bearish) or upper division (bullish) of its own range.")
+divOpt       = input.string("4", "Number of Divisions", options = ["2","3","4","5","6","8","10"])
+divisions    = int(str.tonumber(divOpt))
+divF         = float(divisions)
+
+// Resolve locations
+bearAbove = bearLoc == "Above bar"
+bullAbove = bullLoc == "Above bar"
+
+// ===== Thresholds (per current bar, for divisions filter) =====
+rng      = high - low
+lowerTh  = low + rng * (1.0 / divF)           // Lower division threshold (1/div)
+upperTh  = low + rng * ((divF - 1.0) / divF)  // Upper division threshold ((div-1)/div)
+
+// ===== Base Signals (Change of Context rules) =====
+// Bearish: Candle 2 does NOT take Candle 1 high AND closes below Candle 1 low
+baseBearish = (high <= high[1]) and (close < low[1])
+// Bullish: Candle 2 does NOT take Candle 1 low AND closes above Candle 1 high
+baseBullish = (low >= low[1]) and (close > high[1])
+
+// Apply optional divisions filter
+bearDivOK = (rng > 0) and (close <= lowerTh)
+bullDivOK = (rng > 0) and (close >= upperTh)
+
+bearishSignal = baseBearish and (not useDivisions or bearDivOK)
+bullishSignal = baseBullish and (not useDivisions or bullDivOK)
+
+// ===== Draw labels (no Style tab entries) =====
+bgNone = color.new(color.white, 100)
+
+// Bearish Above
+if bearishSignal and bearAbove and isTiny
+    label.new(bar_index, high, text=bearSym, xloc=xloc.bar_index, yloc=yloc.abovebar,
+        style=label.style_none, color=bgNone, textcolor=bearCol, size=size.tiny, textalign=text.align_center)
+if bearishSignal and bearAbove and isSmall
+    label.new(bar_index, high, text=bearSym, xloc=xloc.bar_index, yloc=yloc.abovebar,
+        style=label.style_none, color=bgNone, textcolor=bearCol, size=size.small, textalign=text.align_center)
+if bearishSignal and bearAbove and isNormal
+    label.new(bar_index, high, text=bearSym, xloc=xloc.bar_index, yloc=yloc.abovebar,
+        style=label.style_none, color=bgNone, textcolor=bearCol, size=size.normal, textalign=text.align_center)
+if bearishSignal and bearAbove and isLarge
+    label.new(bar_index, high, text=bearSym, xloc=xloc.bar_index, yloc=yloc.abovebar,
+        style=label.style_none, color=bgNone, textcolor=bearCol, size=size.large, textalign=text.align_center)
+if bearishSignal and bearAbove and isVeryLarge
+    label.new(bar_index, high, text=bearSym, xloc=xloc.bar_index, yloc=yloc.abovebar,
+        style=label.style_none, color=bgNone, textcolor=bearCol, size=size.huge, textalign=text.align_center)
+
+// Bearish Below
+if bearishSignal and not bearAbove and isTiny
+    label.new(bar_index, low, text=bearSym, xloc=xloc.bar_index, yloc=yloc.belowbar,
+        style=label.style_none, color=bgNone, textcolor=bearCol, size=size.tiny, textalign=text.align_center)
+if bearishSignal and not bearAbove and isSmall
+    label.new(bar_index, low, text=bearSym, xloc=xloc.bar_index, yloc=yloc.belowbar,
+        style=label.style_none, color=bgNone, textcolor=bearCol, size=size.small, textalign=text.align_center)
+if bearishSignal and not bearAbove and isNormal
+    label.new(bar_index, low, text=bearSym, xloc=xloc.bar_index, yloc=yloc.belowbar,
+        style=label.style_none, color=bgNone, textcolor=bearCol, size=size.normal, textalign=text.align_center)
+if bearishSignal and not bearAbove and isLarge
+    label.new(bar_index, low, text=bearSym, xloc=xloc.bar_index, yloc=yloc.belowbar,
+        style=label.style_none, color=bgNone, textcolor=bearCol, size=size.large, textalign=text.align_center)
+if bearishSignal and not bearAbove and isVeryLarge
+    label.new(bar_index, low, text=bearSym, xloc=xloc.bar_index, yloc=yloc.belowbar,
+        style=label.style_none, color=bgNone, textcolor=bearCol, size=size.huge, textalign=text.align_center)
+
+// Bullish Above
+if bullishSignal and bullAbove and isTiny
+    label.new(bar_index, high, text=bullSym, xloc=xloc.bar_index, yloc=yloc.abovebar,
+        style=label.style_none, color=bgNone, textcolor=bullCol, size=size.tiny, textalign=text.align_center)
+if bullishSignal and bullAbove and isSmall
+    label.new(bar_index, high, text=bullSym, xloc=xloc.bar_index, yloc=yloc.abovebar,
+        style=label.style_none, color=bgNone, textcolor=bullCol, size=size.small, textalign=text.align_center)
+if bullishSignal and bullAbove and isNormal
+    label.new(bar_index, high, text=bullSym, xloc=xloc.bar_index, yloc=yloc.abovebar,
+        style=label.style_none, color=bgNone, textcolor=bullCol, size=size.normal, textalign=text.align_center)
+if bullishSignal and bullAbove and isLarge
+    label.new(bar_index, high, text=bullSym, xloc=xloc.bar_index, yloc=yloc.abovebar,
+        style=label.style_none, color=bgNone, textcolor=bullCol, size=size.large, textalign=text.align_center)
+if bullishSignal and bullAbove and isVeryLarge
+    label.new(bar_index, high, text=bullSym, xloc=xloc.bar_index, yloc=yloc.abovebar,
+        style=label.style_none, color=bgNone, textcolor=bullCol, size=size.huge, textalign=text.align_center)
+
+// Bullish Below
+if bullishSignal and not bullAbove and isTiny
+    label.new(bar_index, low, text=bullSym, xloc=xloc.bar_index, yloc=yloc.belowbar,
+        style=label.style_none, color=bgNone, textcolor=bullCol, size=size.tiny, textalign=text.align_center)
+if bullishSignal and not bullAbove and isSmall
+    label.new(bar_index, low, text=bullSym, xloc=xloc.bar_index, yloc=yloc.belowbar,
+        style=label.style_none, color=bgNone, textcolor=bullCol, size=size.small, textalign=text.align_center)
+if bullishSignal and not bullAbove and isNormal
+    label.new(bar_index, low, text=bullSym, xloc=xloc.bar_index, yloc=yloc.belowbar,
+        style=label.style_none, color=bgNone, textcolor=bullCol, size=size.normal, textalign=text.align_center)
+if bullishSignal and not bullAbove and isLarge
+    label.new(bar_index, low, text=bullSym, xloc=xloc.bar_index, yloc=yloc.belowbar,
+        style=label.style_none, color=bgNone, textcolor=bullCol, size=size.large, textalign=text.align_center)
+if bullishSignal and not bullAbove and isVeryLarge
+    label.new(bar_index, low, text=bullSym, xloc=xloc.bar_index, yloc=yloc.belowbar,
+        style=label.style_none, color=bgNone, textcolor=bullCol, size=size.huge, textalign=text.align_center)
+
+// ===== Alerts (const strings only) =====
+// Bearish alerts
+alertcondition(bearishSignal and not useDivisions, title="Change of Context - Bearish", message="Bearish Change of Context: No HH and close < previous low")
+alertcondition(bearishSignal and useDivisions,     title="Change of Context - Bearish (Divisions)", message="Bearish Change of Context: No HH and close < previous low + lower division filter")
+// Bullish alerts
+alertcondition(bullishSignal and not useDivisions, title="Change of Context - Bullish", message="Bullish Change of Context: No LL and close > previous high")
+alertcondition(bullishSignal and useDivisions,     title="Change of Context - Bullish (Divisions)", message="Bullish Change of Context: No LL and close > previous high + upper division filter")

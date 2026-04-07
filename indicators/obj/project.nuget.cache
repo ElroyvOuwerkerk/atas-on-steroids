@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "dgSpecHash": "O/XSUOPMTxM=",
+  "success": true,
+  "projectFilePath": "/Users/lroy/Documents/GitHub/atas-on-steroids/indicators/AtasOnSteroids.csproj",
+  "expectedPackageFiles": [
+    "/Users/lroy/.nuget/packages/microsoft.win32.systemevents/10.0.0/microsoft.win32.systemevents.10.0.0.nupkg.sha512",
+    "/Users/lroy/.nuget/packages/newtonsoft.json/13.0.3/newtonsoft.json.13.0.3.nupkg.sha512",
+    "/Users/lroy/.nuget/packages/system.drawing.common/10.0.0/system.drawing.common.10.0.0.nupkg.sha512"
+  ],
+  "logs": []
+}

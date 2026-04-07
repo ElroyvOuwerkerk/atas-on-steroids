@@ -1,0 +1,12 @@
+/Users/lroy/Documents/GitHub/atas-on-steroids/trading-journal/plugin/bin/Release/net10.0/TradeLogger.deps.json
+/Users/lroy/Documents/GitHub/atas-on-steroids/trading-journal/plugin/bin/Release/net10.0/TradeLogger.dll
+/Users/lroy/Documents/GitHub/atas-on-steroids/trading-journal/plugin/bin/Release/net10.0/TradeLogger.pdb
+/Users/lroy/Documents/GitHub/atas-on-steroids/trading-journal/plugin/obj/Release/net10.0/TradeLogger.csproj.AssemblyReference.cache
+/Users/lroy/Documents/GitHub/atas-on-steroids/trading-journal/plugin/obj/Release/net10.0/TradeLogger.GeneratedMSBuildEditorConfig.editorconfig
+/Users/lroy/Documents/GitHub/atas-on-steroids/trading-journal/plugin/obj/Release/net10.0/TradeLogger.AssemblyInfoInputs.cache
+/Users/lroy/Documents/GitHub/atas-on-steroids/trading-journal/plugin/obj/Release/net10.0/TradeLogger.AssemblyInfo.cs
+/Users/lroy/Documents/GitHub/atas-on-steroids/trading-journal/plugin/obj/Release/net10.0/TradeLogger.csproj.CoreCompileInputs.cache
+/Users/lroy/Documents/GitHub/atas-on-steroids/trading-journal/plugin/obj/Release/net10.0/TradeLogger.dll
+/Users/lroy/Documents/GitHub/atas-on-steroids/trading-journal/plugin/obj/Release/net10.0/refint/TradeLogger.dll
+/Users/lroy/Documents/GitHub/atas-on-steroids/trading-journal/plugin/obj/Release/net10.0/TradeLogger.pdb
+/Users/lroy/Documents/GitHub/atas-on-steroids/trading-journal/plugin/obj/Release/net10.0/ref/TradeLogger.dll

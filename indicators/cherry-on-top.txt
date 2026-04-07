@@ -1,0 +1,115 @@
+//@version=6
+indicator("Cherry on Top", shorttitle="Cherry on Top", overlay=true, max_labels_count=500)
+
+// ===== Divisions (fixed drop-down) =====
+divOpt = input.string("4", "Number of Divisions", options = ["2","3","4","5","6","8","10"])
+divisions = int(str.tonumber(divOpt))
+divF = float(divisions)
+
+// ===== Symbols & Styling (in Inputs only) =====
+// Bearish symbol (printed when: took prior high AND closed in lower division)
+bearSym   = input.string("▼", "Bearish Symbol", options = ["▼","▲","★","●","◆","■","✖","✚"])
+bearCol   = input.color(color.new(color.red, 0),  "Bearish Symbol Color")
+bearLoc   = input.string("Above bar", "Bearish Symbol Location", options = ["Above bar", "Below bar"])
+
+// Bullish symbol (printed when: took prior low AND closed in upper division)
+bullSym   = input.string("▲", "Bullish Symbol", options = ["▲","▼","★","●","◆","■","✖","✚"])
+bullCol   = input.color(color.new(color.lime, 0), "Bullish Symbol Color")
+bullLoc   = input.string("Below bar", "Bullish Symbol Location", options = ["Above bar", "Below bar"])
+
+// Marker size (Inputs-controlled; use size enums via gated calls)
+sizeOpt      = input.string("Small", "Marker Size", options = ["Tiny","Small","Normal","Large","Very Large"])
+isTiny       = sizeOpt == "Tiny"
+isSmall      = sizeOpt == "Small"
+isNormal     = sizeOpt == "Normal"
+isLarge      = sizeOpt == "Large"
+isVeryLarge  = sizeOpt == "Very Large"
+
+// Resolve location selections
+bearAbove = bearLoc == "Above bar"
+bullAbove = bullLoc == "Above bar"
+
+// ===== Thresholds (per current bar) =====
+rng      = high - low
+lowerTh  = low + rng * (1.0 / divF)
+upperTh  = low + rng * ((divF - 1.0) / divF)
+
+// ===== Signals =====
+// Bearish: current bar takes previous high AND closes in lower division
+bearishSignal = (high > high[1]) and (rng > 0) and (close <= lowerTh)
+
+// Bullish: current bar takes previous low AND closes in upper division
+bullishSignal = (low < low[1]) and (rng > 0) and (close >= upperTh)
+
+// ===== Draw labels instead of plotchar to avoid Style tab entries =====
+// Bearish Above
+if bearishSignal and bearAbove and isTiny
+    label.new(bar_index, high, text=bearSym, xloc=xloc.bar_index, yloc=yloc.abovebar,
+         style=label.style_none, color=color.new(color.white, 100), textcolor=bearCol, size=size.tiny, textalign=text.align_center)
+if bearishSignal and bearAbove and isSmall
+    label.new(bar_index, high, text=bearSym, xloc=xloc.bar_index, yloc=yloc.abovebar,
+         style=label.style_none, color=color.new(color.white, 100), textcolor=bearCol, size=size.small, textalign=text.align_center)
+if bearishSignal and bearAbove and isNormal
+    label.new(bar_index, high, text=bearSym, xloc=xloc.bar_index, yloc=yloc.abovebar,
+         style=label.style_none, color=color.new(color.white, 100), textcolor=bearCol, size=size.normal, textalign=text.align_center)
+if bearishSignal and bearAbove and isLarge
+    label.new(bar_index, high, text=bearSym, xloc=xloc.bar_index, yloc=yloc.abovebar,
+         style=label.style_none, color=color.new(color.white, 100), textcolor=bearCol, size=size.large, textalign=text.align_center)
+if bearishSignal and bearAbove and isVeryLarge
+    label.new(bar_index, high, text=bearSym, xloc=xloc.bar_index, yloc=yloc.abovebar,
+         style=label.style_none, color=color.new(color.white, 100), textcolor=bearCol, size=size.huge, textalign=text.align_center)
+
+// Bearish Below
+if bearishSignal and not bearAbove and isTiny
+    label.new(bar_index, low, text=bearSym, xloc=xloc.bar_index, yloc=yloc.belowbar,
+         style=label.style_none, color=color.new(color.white, 100), textcolor=bearCol, size=size.tiny, textalign=text.align_center)
+if bearishSignal and not bearAbove and isSmall
+    label.new(bar_index, low, text=bearSym, xloc=xloc.bar_index, yloc=yloc.belowbar,
+         style=label.style_none, color=color.new(color.white, 100), textcolor=bearCol, size=size.small, textalign=text.align_center)
+if bearishSignal and not bearAbove and isNormal
+    label.new(bar_index, low, text=bearSym, xloc=xloc.bar_index, yloc=yloc.belowbar,
+         style=label.style_none, color=color.new(color.white, 100), textcolor=bearCol, size=size.normal, textalign=text.align_center)
+if bearishSignal and not bearAbove and isLarge
+    label.new(bar_index, low, text=bearSym, xloc=xloc.bar_index, yloc=yloc.belowbar,
+         style=label.style_none, color=color.new(color.white, 100), textcolor=bearCol, size=size.large, textalign=text.align_center)
+if bearishSignal and not bearAbove and isVeryLarge
+    label.new(bar_index, low, text=bearSym, xloc=xloc.bar_index, yloc=yloc.belowbar,
+         style=label.style_none, color=color.new(color.white, 100), textcolor=bearCol, size=size.huge, textalign=text.align_center)
+
+// Bullish Above
+if bullishSignal and bullAbove and isTiny
+    label.new(bar_index, high, text=bullSym, xloc=xloc.bar_index, yloc=yloc.abovebar,
+         style=label.style_none, color=color.new(color.white, 100), textcolor=bullCol, size=size.tiny, textalign=text.align_center)
+if bullishSignal and bullAbove and isSmall
+    label.new(bar_index, high, text=bullSym, xloc=xloc.bar_index, yloc=yloc.abovebar,
+         style=label.style_none, color=color.new(color.white, 100), textcolor=bullCol, size=size.small, textalign=text.align_center)
+if bullishSignal and bullAbove and isNormal
+    label.new(bar_index, high, text=bullSym, xloc=xloc.bar_index, yloc=yloc.abovebar,
+         style=label.style_none, color=color.new(color.white, 100), textcolor=bullCol, size=size.normal, textalign=text.align_center)
+if bullishSignal and bullAbove and isLarge
+    label.new(bar_index, high, text=bullSym, xloc=xloc.bar_index, yloc=yloc.abovebar,
+         style=label.style_none, color=color.new(color.white, 100), textcolor=bullCol, size=size.large, textalign=text.align_center)
+if bullishSignal and bullAbove and isVeryLarge
+    label.new(bar_index, high, text=bullSym, xloc=xloc.bar_index, yloc=yloc.abovebar,
+         style=label.style_none, color=color.new(color.white, 100), textcolor=bullCol, size=size.huge, textalign=text.align_center)
+
+// Bullish Below
+if bullishSignal and not bullAbove and isTiny
+    label.new(bar_index, low, text=bullSym, xloc=xloc.bar_index, yloc=yloc.belowbar,
+         style=label.style_none, color=color.new(color.white, 100), textcolor=bullCol, size=size.tiny, textalign=text.align_center)
+if bullishSignal and not bullAbove and isSmall
+    label.new(bar_index, low, text=bullSym, xloc=xloc.bar_index, yloc=yloc.belowbar,
+         style=label.style_none, color=color.new(color.white, 100), textcolor=bullCol, size=size.small, textalign=text.align_center)
+if bullishSignal and not bullAbove and isNormal
+    label.new(bar_index, low, text=bullSym, xloc=xloc.bar_index, yloc=yloc.belowbar,
+         style=label.style_none, color=color.new(color.white, 100), textcolor=bullCol, size=size.normal, textalign=text.align_center)
+if bullishSignal and not bullAbove and isLarge
+    label.new(bar_index, low, text=bullSym, xloc=xloc.bar_index, yloc=yloc.belowbar,
+         style=label.style_none, color=color.new(color.white, 100), textcolor=bullCol, size=size.large, textalign=text.align_center)
+if bullishSignal and not bullAbove and isVeryLarge
+    label.new(bar_index, low, text=bullSym, xloc=xloc.bar_index, yloc=yloc.belowbar,
+         style=label.style_none, color=color.new(color.white, 100), textcolor=bullCol, size=size.huge, textalign=text.align_center)
+
+// ===== Alerts (unchanged) =====
+alertcondition(bearishSignal, title="Cherry on Top - Bearish", message="Bearish: Took prior high and closed in lower division.")
+alertcondition(bullishSignal, title="Cherry on Top - Bullish", message="Bullish: Took prior low and closed in upper division.")

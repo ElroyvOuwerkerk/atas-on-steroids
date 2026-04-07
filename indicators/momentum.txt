@@ -1,0 +1,45 @@
+//@version=6
+indicator("Division Candle Overlay (OHLC)", shorttitle="Division Candles", overlay=true)
+
+// ====== Inputs ======
+useUpper = input.bool(true,  "Enable Upper Zone (Green)")
+useLower = input.bool(true,  "Enable Lower Zone (Red)")
+
+upperCol = input.color(color.new(color.green, 0), "Upper Zone Color")
+lowerCol = input.color(color.new(color.red,   0), "Lower Zone Color")
+
+// Division selection (fixed drop-down)
+divOpt = input.string("4", "Number of Divisions", options = ["2","3","4","5","6","8","10"])
+
+// Resolve divisions from selection
+divisions = int(str.tonumber(divOpt))
+divF = float(divisions)  // float for math
+
+// ====== Threshold computation from OHLC ======
+rng = high - low
+lowerFrac = 1.0 / divF
+upperFrac = (divF - 1.0) / divF
+lowerTh   = low + rng * lowerFrac
+upperTh   = low + rng * upperFrac
+
+// ====== Conditions (relative to close) ======
+// No special handling for rng == 0; conditions are gated by rng > 0, so zero-range bars won't be colored.
+upperCond = useUpper and (rng > 0 ? close >= upperTh : false)
+lowerCond = useLower and (rng > 0 ? close <= lowerTh : false)
+
+// ====== Decide bar color ======
+// If both conditions are true (e.g., divisions=2 and close equals midpoint), no color is applied.
+color barClr = na
+if upperCond and not lowerCond
+    barClr := upperCol
+else if lowerCond and not upperCond
+    barClr := lowerCol
+else
+    barClr := na
+
+// ====== Apply color overlay ======
+barcolor(barClr)
+
+// ====== Optional visual helpers (commented out) ======
+// plot(lowerTh, "Lower Threshold", color=color.new(color.red,   80))
+// plot(upperTh, "Upper Threshold", color=color.new(color.green, 80))

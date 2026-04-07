@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "dashboard",
+      "runtimeExecutable": "/bin/sh",
+      "runtimeArgs": ["-c", "export PATH=/opt/homebrew/bin:$PATH && cd trading-journal/dashboard && npx vite --port 5173"],
+      "port": 5173
+    }
+  ]
+}

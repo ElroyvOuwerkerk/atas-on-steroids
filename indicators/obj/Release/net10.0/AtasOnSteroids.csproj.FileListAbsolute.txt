@@ -1,0 +1,12 @@
+/Users/lroy/Documents/GitHub/atas-on-steroids/indicators/bin/Release/net10.0/AtasOnSteroids.deps.json
+/Users/lroy/Documents/GitHub/atas-on-steroids/indicators/bin/Release/net10.0/AtasOnSteroids.dll
+/Users/lroy/Documents/GitHub/atas-on-steroids/indicators/bin/Release/net10.0/AtasOnSteroids.pdb
+/Users/lroy/Documents/GitHub/atas-on-steroids/indicators/obj/Release/net10.0/AtasOnSteroids.csproj.AssemblyReference.cache
+/Users/lroy/Documents/GitHub/atas-on-steroids/indicators/obj/Release/net10.0/AtasOnSteroids.GeneratedMSBuildEditorConfig.editorconfig
+/Users/lroy/Documents/GitHub/atas-on-steroids/indicators/obj/Release/net10.0/AtasOnSteroids.AssemblyInfoInputs.cache
+/Users/lroy/Documents/GitHub/atas-on-steroids/indicators/obj/Release/net10.0/AtasOnSteroids.AssemblyInfo.cs
+/Users/lroy/Documents/GitHub/atas-on-steroids/indicators/obj/Release/net10.0/AtasOnSteroids.csproj.CoreCompileInputs.cache
+/Users/lroy/Documents/GitHub/atas-on-steroids/indicators/obj/Release/net10.0/AtasOnSteroids.dll
+/Users/lroy/Documents/GitHub/atas-on-steroids/indicators/obj/Release/net10.0/refint/AtasOnSteroids.dll
+/Users/lroy/Documents/GitHub/atas-on-steroids/indicators/obj/Release/net10.0/AtasOnSteroids.pdb
+/Users/lroy/Documents/GitHub/atas-on-steroids/indicators/obj/Release/net10.0/ref/AtasOnSteroids.dll
