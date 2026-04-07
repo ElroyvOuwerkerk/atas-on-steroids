@@ -10,3 +10,4 @@
 /Users/lroy/Documents/GitHub/atas-on-steroids/indicators/obj/Release/net10.0/refint/AtasOnSteroids.dll
 /Users/lroy/Documents/GitHub/atas-on-steroids/indicators/obj/Release/net10.0/AtasOnSteroids.pdb
 /Users/lroy/Documents/GitHub/atas-on-steroids/indicators/obj/Release/net10.0/ref/AtasOnSteroids.dll
+/Users/lroy/Documents/GitHub/atas-on-steroids/indicators/obj/Release/net10.0/AtasOnSteroids.sourcelink.json

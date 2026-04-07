@@ -10,3 +10,4 @@
 /Users/lroy/Documents/GitHub/atas-on-steroids/trading-journal/plugin/obj/Release/net10.0/refint/TradeLogger.dll
 /Users/lroy/Documents/GitHub/atas-on-steroids/trading-journal/plugin/obj/Release/net10.0/TradeLogger.pdb
 /Users/lroy/Documents/GitHub/atas-on-steroids/trading-journal/plugin/obj/Release/net10.0/ref/TradeLogger.dll
+/Users/lroy/Documents/GitHub/atas-on-steroids/trading-journal/plugin/obj/Release/net10.0/TradeLogger.sourcelink.json

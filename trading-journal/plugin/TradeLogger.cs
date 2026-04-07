@@ -21,14 +21,14 @@ public class TradeLogger : ChartStrategy
         "None",            // 0
         "COT_Bull",        // 1
         "COT_Bear",        // 2
-        "COT_Weak_Bull",   // 3
-        "COT_Weak_Bear",   // 4
-        "Magic_Bull",      // 5
-        "Magic_Bear",      // 6
+        "COT_1Candle_Bull",// 3
+        "COT_1Candle_Bear",// 4
+        "MCoC_Bull",       // 5
+        "MCoC_Bear",       // 6
         "COC_Bull",        // 7
         "COC_Bear",        // 8
-        "Momentum_Bull",   // 9
-        "Momentum_Bear",   // 10
+        "Moon_Bull",       // 9
+        "Moon_Bear",       // 10
     };
 
     #endregion
@@ -46,8 +46,7 @@ public class TradeLogger : ChartStrategy
     private string _entrySignal = "None";
     private string _entrySignalSource = "";
 
-    // Internal indicators for signal reading
-    private readonly AtasOnSteroids _ccSuite = new();
+    // Internal indicator for signal reading
     private readonly CCSuiteLevels _ccLevels = new();
 
     #endregion
@@ -113,8 +112,7 @@ public class TradeLogger : ChartStrategy
     {
         Panel = IndicatorDataProvider.CandlesPanel;
 
-        // Register internal indicators (hidden, for signal reading only)
-        Add(_ccSuite);
+        // Register internal indicator (hidden, for signal reading only)
         Add(_ccLevels);
     }
 
@@ -210,28 +208,14 @@ public class TradeLogger : ChartStrategy
         _entrySignal = "None";
         _entrySignalSource = "";
 
-        // Check CC Suite Levels first (higher priority — signal at key level)
         for (int i = 0; i < _signalLookbackBars && bar - i >= 0; i++)
         {
             int checkBar = bar - i;
-            int levelsCode = GetSignalCode(_ccLevels, checkBar);
-            if (levelsCode > 0 && levelsCode < SignalNames.Length)
+            int code = GetSignalCode(_ccLevels, checkBar);
+            if (code > 0 && code < SignalNames.Length)
             {
-                _entrySignal = SignalNames[levelsCode];
+                _entrySignal = SignalNames[code];
                 _entrySignalSource = "CC Suite Levels";
-                return;
-            }
-        }
-
-        // Fall back to CC Suite (no level filter)
-        for (int i = 0; i < _signalLookbackBars && bar - i >= 0; i++)
-        {
-            int checkBar = bar - i;
-            int suiteCode = GetSignalCode(_ccSuite, checkBar);
-            if (suiteCode > 0 && suiteCode < SignalNames.Length)
-            {
-                _entrySignal = SignalNames[suiteCode];
-                _entrySignalSource = "CC Suite";
                 return;
             }
         }

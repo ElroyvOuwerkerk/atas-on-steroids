@@ -11,14 +11,14 @@ const SIGNALS = [
   "",
   "COT_Bull",
   "COT_Bear",
-  "COT_Weak_Bull",
-  "COT_Weak_Bear",
-  "Magic_Bull",
-  "Magic_Bear",
+  "COT_1Candle_Bull",
+  "COT_1Candle_Bear",
+  "MCoC_Bull",
+  "MCoC_Bear",
   "COC_Bull",
   "COC_Bear",
-  "Momentum_Bull",
-  "Momentum_Bear",
+  "Moon_Bull",
+  "Moon_Bear",
 ];
 
 export default function FilterBar({

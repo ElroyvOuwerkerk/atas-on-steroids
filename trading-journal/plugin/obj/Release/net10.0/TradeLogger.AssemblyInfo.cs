@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("TradeLogger")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+67a093abae114dbf22668de1b31a2c6798c3c9d5")]
 [assembly: System.Reflection.AssemblyProductAttribute("TradeLogger")]
 [assembly: System.Reflection.AssemblyTitleAttribute("TradeLogger")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
