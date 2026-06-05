@@ -26,7 +26,7 @@ if is_running "$BACKEND_PID_FILE"; then
 else
     echo "Starting backend..."
     cd "$DIR/backend"
-    python3 -m uvicorn app.main:app --host 0.0.0.0 --port 3001 &
+    "$DIR/backend/.venv/bin/python3" -m uvicorn app.main:app --host 0.0.0.0 --port 3001 &
     echo $! > "$BACKEND_PID_FILE"
     echo "Backend started (PID $!)"
     cd "$DIR"

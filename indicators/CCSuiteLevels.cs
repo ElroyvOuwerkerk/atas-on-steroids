@@ -402,6 +402,22 @@ public class CCSuiteLevels : Indicator
         if (bar == 0)
             return;
 
+        // ── Clear any stale markers / tracked signals for this bar ──
+        // (Necessary because OnCalculate may run mid-bar; conditions can flip
+        //  before the bar closes, leaving ghost markers from earlier ticks.)
+        Labels.Remove("clU_" + bar);
+        Labels.Remove("clB_" + bar);
+        Labels.Remove("cxU_" + bar);
+        Labels.Remove("cxB_" + bar);
+        _cherryBullSignals.RemoveAll(s => s.Bar == bar);
+        _cherryBearSignals.RemoveAll(s => s.Bar == bar);
+        _moonshotBullSignals.RemoveAll(s => s.Bar == bar);
+        _moonshotBearSignals.RemoveAll(s => s.Bar == bar);
+        _ctxBullSignals.RemoveAll(s => s.Bar == bar);
+        _ctxBearSignals.RemoveAll(s => s.Bar == bar);
+        _magicBullSignals.RemoveAll(s => s.Bar == bar);
+        _magicBearSignals.RemoveAll(s => s.Bar == bar);
+
         // Read user-drawn horizontal lines from the chart
         var drawingObjects = ChartInfo?.DrawingObjectsListInfo;
         if (drawingObjects == null)
@@ -419,34 +435,42 @@ public class CCSuiteLevels : Indicator
             {
                 try
                 {
-                    // Use reflection to get the color property from the horizontal line
                     var lineType = line.GetType();
-                    var colorProp = lineType.GetProperty("Color")
-                                ?? lineType.GetProperty("Pen")
-                                ?? lineType.GetProperty("DrawingObjectColor");
-                    if (colorProp == null)
-                        continue;
+                    Color? found = null;
 
-                    var val = colorProp.GetValue(line);
-                    if (val == null)
-                        continue;
-
-                    // Handle both direct Color and Pen-with-Color
-                    Color lc;
-                    if (val is Color c2)
-                        lc = c2;
-                    else
+                    // Scan ALL properties for a Color value (direct or nested inside a Pen/Brush)
+                    foreach (var prop in lineType.GetProperties())
                     {
-                        var penColorProp = val.GetType().GetProperty("Color");
-                        if (penColorProp == null)
-                            continue;
-                        var penColorVal = penColorProp.GetValue(val);
-                        if (penColorVal is Color c3)
-                            lc = c3;
-                        else
-                            continue;
+                        try
+                        {
+                            var val = prop.GetValue(line);
+                            if (val == null) continue;
+
+                            if (val is Color directColor)
+                            {
+                                found = directColor;
+                                break;
+                            }
+
+                            // Check if this property has a nested .Color (e.g. Pen.Color, Brush.Color)
+                            var nestedColorProp = val.GetType().GetProperty("Color");
+                            if (nestedColorProp != null)
+                            {
+                                var nestedVal = nestedColorProp.GetValue(val);
+                                if (nestedVal is Color nestedColor)
+                                {
+                                    found = nestedColor;
+                                    break;
+                                }
+                            }
+                        }
+                        catch { /* skip inaccessible properties */ }
                     }
 
+                    if (found == null)
+                        continue;
+
+                    var lc = found.Value;
                     if (lc.R != _levelColor.R || lc.G != _levelColor.G || lc.B != _levelColor.B)
                         continue;
                 }

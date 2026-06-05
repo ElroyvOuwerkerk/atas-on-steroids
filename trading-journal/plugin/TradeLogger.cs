@@ -7,12 +7,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using ATAS.DataFeedsCore;
 using ATAS.Indicators;
-using ATAS.Strategies.Chart;
 using Newtonsoft.Json;
 
 [DisplayName("CC Trade Logger")]
 [Category("Custom")]
-public class TradeLogger : ChartStrategy
+public class TradeLogger : Indicator
 {
     #region Signal Codes
 
@@ -38,6 +37,8 @@ public class TradeLogger : ChartStrategy
     private static readonly HttpClient Http = new();
 
     private bool _inPosition;
+    private decimal _currentNetPosition;       // signed: + long, - short, 0 flat
+    private decimal _lastFillPrice;            // updated on every OnNewMyTrade
     private OrderDirections _entryDirection;
     private decimal _entryPrice;
     private decimal _entrySize;
@@ -122,11 +123,7 @@ public class TradeLogger : ChartStrategy
 
     protected override void OnCalculate(int bar, decimal value)
     {
-        // Internal indicators auto-calculate via Add().
-        // Fallback position detection: check if CurrentPosition changed.
-        // This handles cases where OnNewMyTrade doesn't fire for manual trades.
-        if (bar == CurrentBar - 1)
-            CheckPositionState(bar);
+        // Internal indicators auto-calculate via Add(). Nothing else needed here.
     }
 
     #endregion
@@ -136,43 +133,53 @@ public class TradeLogger : ChartStrategy
     protected override void OnNewMyTrade(MyTrade myTrade)
     {
         base.OnNewMyTrade(myTrade);
-        CheckPositionState(CurrentBar - 1);
+
+        // Track the most recent fill price so we can use it as entry/exit price.
+        _lastFillPrice = myTrade.Price;
+
+        // Update our running net position from fills (signed).
+        decimal delta = myTrade.OrderDirection == OrderDirections.Buy
+            ? myTrade.Volume
+            : -myTrade.Volume;
+        _currentNetPosition += delta;
+
+        EvaluatePositionState(CurrentBar - 1);
     }
 
-    private void CheckPositionState(int bar)
+    protected override void OnPositionChanged(Position position)
     {
-        decimal pos = CurrentPosition;
-        bool nowInPosition = pos != 0;
+        base.OnPositionChanged(position);
+
+        // Authoritative net position reading from broker; used as fallback if our
+        // running tally drifts (e.g. partial fills, external changes).
+        if (position != null)
+        {
+            // Position.Volume is unsigned; combine with CurrentBuy/CurrentSell to sign it.
+            decimal signed = position.CurrentBuy - position.CurrentSell;
+            _currentNetPosition = signed;
+            EvaluatePositionState(CurrentBar - 1);
+        }
+    }
+
+    private void EvaluatePositionState(int bar)
+    {
+        bool nowInPosition = _currentNetPosition != 0;
 
         if (!_inPosition && nowInPosition)
         {
-            // Position opened
             _inPosition = true;
-            _entryDirection = pos > 0 ? OrderDirections.Buy : OrderDirections.Sell;
-            _entrySize = Math.Abs(pos);
+            _entryDirection = _currentNetPosition > 0 ? OrderDirections.Buy : OrderDirections.Sell;
+            _entrySize = Math.Abs(_currentNetPosition);
             _entryBar = bar;
             _entryTime = DateTime.UtcNow;
+            _entryPrice = _lastFillPrice;
 
-            // Read entry price from the latest fill
-            _entryPrice = 0;
-            foreach (var t in MyTrades)
-            {
-                _entryPrice = t.Price;
-            }
-
-            // Read the active signal
             ReadSignalAtBar(bar);
         }
         else if (_inPosition && !nowInPosition)
         {
-            // Position closed
             _inPosition = false;
-
-            decimal exitPrice = 0;
-            foreach (var t in MyTrades)
-            {
-                exitPrice = t.Price;
-            }
+            decimal exitPrice = _lastFillPrice;
 
             decimal pnl = _entryDirection == OrderDirections.Buy
                 ? (exitPrice - _entryPrice) * _entrySize
