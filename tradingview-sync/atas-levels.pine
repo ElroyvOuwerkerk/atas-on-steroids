@@ -1,0 +1,155 @@
+//@version=6
+// ─────────────────────────────────────────────────────────────────────────────
+//  ATAS Levels — mirrors ATAS drawings onto a TradingView chart:
+//  horizontal rays/lines, rectangles, and HighlightY zones, with original
+//  colours, fills, labels, and time anchors.
+//
+//  Data format (from the Level Sync backend; one record per object, ';'-sep):
+//        kind|price|price2|borderRRGGBB|fillRRGGBBAA|name|startEpoch|endEpoch
+//  kind: L = line/ray   R = rectangle   Z = full-width zone
+//  epoch 0 = no anchor (L/Z: full width; R end: extends right)
+//
+//  Feed it via:
+//   • Manual: copy from http://localhost:3001/api/levels/view/page and paste
+//     into the "Levels" input below.
+//   • Auto:   the Tampermonkey userscript (atas-levels.user.js).
+//
+//  Prices are identical across a contract family — use the ES string on
+//  ES *and* MES charts, the NQ string on NQ *and* MNQ.
+// ─────────────────────────────────────────────────────────────────────────────
+indicator("ATAS Levels", overlay = true,
+     max_lines_count = 500, max_labels_count = 500, max_boxes_count = 500)
+
+// ── Inputs ──
+levelsStr   = input.text_area("", title = "Levels (paste from ATAS sync page)")
+showLabels  = input.bool(true,   title = "Show labels")
+showPrices  = input.bool(true,   title = "Show price values in labels")
+labelSizeS  = input.string("Normal", title = "Label size", options = ["Tiny", "Small", "Normal", "Large"])
+labelOffset = input.int(3,       title = "Label offset (bars right of last candle)", minval = 0, maxval = 50)
+lineWidth   = input.int(1,       title = "Line width", minval = 1, maxval = 5)
+lineStyleS  = input.string("Solid", title = "Line style", options = ["Solid", "Dashed", "Dotted"])
+showBoxes   = input.bool(true,   title = "Show rectangles / zones")
+
+// ── Helpers ──
+hexDigit(string c) =>
+    p = str.pos("0123456789ABCDEF", str.upper(c))
+    na(p) ? 0 : p
+
+hexByte(string h, int i) =>
+    hexDigit(str.substring(h, i, i + 1)) * 16 + hexDigit(str.substring(h, i + 1, i + 2))
+
+// "RRGGBB" → [r, g, b]; short/invalid input → white
+hexRgb(string hex) =>
+    h = str.upper(hex)
+    ok = str.length(h) >= 6
+    r = ok ? hexByte(h, 0) : 255
+    g = ok ? hexByte(h, 2) : 255
+    b = ok ? hexByte(h, 4) : 255
+    [r, g, b]
+
+// "RRGGBBAA" → colour with alpha applied (AA missing → opaque)
+hexFill(string hex) =>
+    [r, g, b] = hexRgb(hex)
+    a = str.length(hex) >= 8 ? hexByte(str.upper(hex), 6) : 255
+    color.new(color.rgb(r, g, b), 100 - int(a * 100 / 255))
+
+styleOf(string s) =>
+    s == "Dashed" ? line.style_dashed : s == "Dotted" ? line.style_dotted : line.style_solid
+
+sizeOf(string s) =>
+    s == "Tiny" ? size.tiny : s == "Small" ? size.small : s == "Large" ? size.large : size.normal
+
+// ── State ──
+var line[]  lns = array.new<line>()
+var label[] lbs = array.new<label>()
+var box[]   bxs = array.new<box>()
+
+// ── Render: full redraw on the last bar so add/move/delete in ATAS all sync ──
+if barstate.islast
+    for ln in lns
+        line.delete(ln)
+    array.clear(lns)
+    for lb in lbs
+        label.delete(lb)
+    array.clear(lbs)
+    for bx in bxs
+        box.delete(bx)
+    array.clear(bxs)
+
+    if str.length(levelsStr) > 0
+        recs = str.split(levelsStr, ";")
+        for rec in recs
+            f = str.split(rec, "|")
+            if array.size(f) >= 8
+                kind     = array.get(f, 0)
+                price    = str.tonumber(array.get(f, 1))
+                price2   = str.tonumber(array.get(f, 2))
+                borderHx = array.get(f, 3)
+                fillHx   = array.get(f, 4)
+                name     = array.get(f, 5)
+                startSec = str.tonumber(array.get(f, 6))
+                endSec   = str.tonumber(array.get(f, 7))
+                if not na(price)
+                    [r, g, b]  = hexRgb(borderHx)
+                    col        = color.rgb(r, g, b)
+                    // readable label text colour on the coloured chip
+                    lum        = 0.299 * r + 0.587 * g + 0.114 * b
+                    txtCol     = lum > 145 ? color.black : color.white
+                    hasStart   = not na(startSec) and startSec > 0
+                    hasEnd     = not na(endSec) and endSec > 0
+                    labelPrice = price
+
+                    if kind == "L"
+                        if hasStart
+                            ln = line.new(int(startSec) * 1000, price, time, price,
+                                 xloc = xloc.bar_time, extend = extend.right,
+                                 color = col, width = lineWidth, style = styleOf(lineStyleS))
+                            array.push(lns, ln)
+                        else
+                            ln = line.new(bar_index, price, bar_index + 1, price,
+                                 extend = extend.both,
+                                 color = col, width = lineWidth, style = styleOf(lineStyleS))
+                            array.push(lns, ln)
+
+                    else if showBoxes and not na(price2) and price2 > 0
+                        top = math.max(price, price2)
+                        bot = math.min(price, price2)
+                        labelPrice := (top + bot) / 2
+                        fillCol = str.length(fillHx) >= 6 ? hexFill(fillHx) : color.new(col, 90)
+                        if kind == "Z" or not hasStart
+                            // full-width zone
+                            bx = box.new(bar_index, top, bar_index + 1, bot,
+                                 border_color = col, border_width = 1, extend = extend.both,
+                                 bgcolor = fillCol)
+                            array.push(bxs, bx)
+                        else
+                            // time-anchored rectangle; no end → extends right
+                            l = int(startSec) * 1000
+                            rgt = hasEnd ? int(endSec) * 1000 : time
+                            bx = box.new(l, top, rgt, bot, xloc = xloc.bar_time,
+                                 border_color = col, border_width = 1,
+                                 extend = hasEnd ? extend.none : extend.right,
+                                 bgcolor = fillCol)
+                            array.push(bxs, bx)
+
+                    // Chip text: price value (axis mark) + the ATAS label when present.
+                    // Lines always get a price chip; boxes/zones only when named
+                    // (price ranges on 70+ unnamed rectangles would be noise).
+                    chipText = ""
+                    if kind == "L"
+                        priceTxt = str.tostring(price, format.mintick)
+                        chipText := showPrices
+                             ? (str.length(name) > 0 ? priceTxt + " · " + name : priceTxt)
+                             : name
+                    else if str.length(name) > 0
+                        rangeTxt = str.tostring(math.min(price, price2), format.mintick)
+                             + "–" + str.tostring(math.max(price, price2), format.mintick)
+                        chipText := showPrices ? rangeTxt + " · " + name : name
+
+                    if showLabels and str.length(chipText) > 0
+                        // filled chip hugging the price axis, in the object's colour
+                        lb = label.new(bar_index + labelOffset, labelPrice, chipText,
+                             xloc = xloc.bar_index, yloc = yloc.price,
+                             style = label.style_label_left, color = col,
+                             textcolor = txtCol, size = sizeOf(labelSizeS))
+                        array.push(lbs, lb)

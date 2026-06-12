@@ -17,6 +17,7 @@ public class CCSuiteLevels : Indicator
     #region Fields
 
     private readonly ValueDataSeries _signalSeries = new("Signal") { IsHidden = true };
+    private readonly PaintbarsDataSeries _paintBars = new("Division Bar Colors") { IsHidden = true };
 
     // Probability tracking
     private readonly List<LevelSignalRecord> _cherryBearSignals = new();
@@ -65,6 +66,15 @@ public class CCSuiteLevels : Indicator
 
     #region Settings — Master Toggles
 
+    private bool _showDivisionOverlay = true;
+    [Display(Name = "Show Division Candle Overlay (75% momentum)", GroupName = "0) Master Toggles", Order = 0,
+        Description = "Colors candles whose close lands in the extreme division of the candle's own range (default top/bottom 25%)")]
+    public bool ShowDivisionOverlay
+    {
+        get => _showDivisionOverlay;
+        set { _showDivisionOverlay = value; RecalculateValues(); }
+    }
+
     private bool _showCherry = true;
     [Display(Name = "Show Cherry on Top at Level", GroupName = "0) Master Toggles", Order = 1)]
     public bool ShowCherry
@@ -102,13 +112,63 @@ public class CCSuiteLevels : Indicator
     #endregion
 
     // ═══════════════════════════════════════════════════════════════
-    //  1) CHERRY ON TOP AT LEVEL
+    //  1) DIVISION CANDLE OVERLAY (75% momentum)
+    // ═══════════════════════════════════════════════════════════════
+
+    #region Settings — Division Candle Overlay
+
+    private int _divOverlayDivisions = 4;
+    [Display(Name = "Number of Divisions", GroupName = "1) Division Candle Overlay", Order = 10,
+        Description = "Divide the candle's range into N equal zones (4 = quartiles; default top/bottom 25%)")]
+    [Range(2, 10)]
+    public int DivOverlayDivisions
+    {
+        get => _divOverlayDivisions;
+        set { _divOverlayDivisions = value; RecalculateValues(); }
+    }
+
+    private bool _divUpperEnabled = true;
+    [Display(Name = "Enable Upper Zone (Green)", GroupName = "1) Division Candle Overlay", Order = 20)]
+    public bool DivUpperEnabled
+    {
+        get => _divUpperEnabled;
+        set { _divUpperEnabled = value; RecalculateValues(); }
+    }
+
+    private Color _divUpperColor = Color.Green;
+    [Display(Name = "Upper Zone Color", GroupName = "1) Division Candle Overlay", Order = 30)]
+    public Color DivUpperColor
+    {
+        get => _divUpperColor;
+        set { _divUpperColor = value; RecalculateValues(); }
+    }
+
+    private bool _divLowerEnabled = true;
+    [Display(Name = "Enable Lower Zone (Red)", GroupName = "1) Division Candle Overlay", Order = 40)]
+    public bool DivLowerEnabled
+    {
+        get => _divLowerEnabled;
+        set { _divLowerEnabled = value; RecalculateValues(); }
+    }
+
+    private Color _divLowerColor = Color.Red;
+    [Display(Name = "Lower Zone Color", GroupName = "1) Division Candle Overlay", Order = 50)]
+    public Color DivLowerColor
+    {
+        get => _divLowerColor;
+        set { _divLowerColor = value; RecalculateValues(); }
+    }
+
+    #endregion
+
+    // ═══════════════════════════════════════════════════════════════
+    //  2) CHERRY ON TOP AT LEVEL
     // ═══════════════════════════════════════════════════════════════
 
     #region Settings — Cherry on Top at Level
 
     private int _cherryDivisions = 4;
-    [Display(Name = "Number of Divisions", GroupName = "1) Cherry on Top at Level", Order = 100)]
+    [Display(Name = "Number of Divisions", GroupName = "2) Cherry on Top at Level", Order = 100)]
     [Range(2, 10)]
     public int CherryDivisions
     {
@@ -117,7 +177,7 @@ public class CCSuiteLevels : Indicator
     }
 
     private MarkerSymbol _cherryBullSymbol = MarkerSymbol.TriangleUp;
-    [Display(Name = "Bullish Symbol", GroupName = "1) Cherry on Top at Level", Order = 110)]
+    [Display(Name = "Bullish Symbol", GroupName = "2) Cherry on Top at Level", Order = 110)]
     public MarkerSymbol CherryBullSymbol
     {
         get => _cherryBullSymbol;
@@ -125,7 +185,7 @@ public class CCSuiteLevels : Indicator
     }
 
     private Color _cherryBullColor = Color.Green;
-    [Display(Name = "Bullish Symbol Color", GroupName = "1) Cherry on Top at Level", Order = 120)]
+    [Display(Name = "Bullish Symbol Color", GroupName = "2) Cherry on Top at Level", Order = 120)]
     public Color CherryBullColor
     {
         get => _cherryBullColor;
@@ -133,7 +193,7 @@ public class CCSuiteLevels : Indicator
     }
 
     private MarkerLocation _cherryBullLocation = MarkerLocation.BelowBar;
-    [Display(Name = "Bullish Symbol Location", GroupName = "1) Cherry on Top at Level", Order = 130)]
+    [Display(Name = "Bullish Symbol Location", GroupName = "2) Cherry on Top at Level", Order = 130)]
     public MarkerLocation CherryBullLocation
     {
         get => _cherryBullLocation;
@@ -141,7 +201,7 @@ public class CCSuiteLevels : Indicator
     }
 
     private MarkerSymbol _cherryBearSymbol = MarkerSymbol.TriangleDown;
-    [Display(Name = "Bearish Symbol", GroupName = "1) Cherry on Top at Level", Order = 140)]
+    [Display(Name = "Bearish Symbol", GroupName = "2) Cherry on Top at Level", Order = 140)]
     public MarkerSymbol CherryBearSymbol
     {
         get => _cherryBearSymbol;
@@ -149,7 +209,7 @@ public class CCSuiteLevels : Indicator
     }
 
     private Color _cherryBearColor = Color.Red;
-    [Display(Name = "Bearish Symbol Color", GroupName = "1) Cherry on Top at Level", Order = 150)]
+    [Display(Name = "Bearish Symbol Color", GroupName = "2) Cherry on Top at Level", Order = 150)]
     public Color CherryBearColor
     {
         get => _cherryBearColor;
@@ -157,7 +217,7 @@ public class CCSuiteLevels : Indicator
     }
 
     private MarkerLocation _cherryBearLocation = MarkerLocation.AboveBar;
-    [Display(Name = "Bearish Symbol Location", GroupName = "1) Cherry on Top at Level", Order = 160)]
+    [Display(Name = "Bearish Symbol Location", GroupName = "2) Cherry on Top at Level", Order = 160)]
     public MarkerLocation CherryBearLocation
     {
         get => _cherryBearLocation;
@@ -165,7 +225,7 @@ public class CCSuiteLevels : Indicator
     }
 
     private MarkerSize _cherryMarkerSize = MarkerSize.Small;
-    [Display(Name = "Marker Size", GroupName = "1) Cherry on Top at Level", Order = 170)]
+    [Display(Name = "Marker Size", GroupName = "2) Cherry on Top at Level", Order = 170)]
     public MarkerSize CherryMarkerSize
     {
         get => _cherryMarkerSize;
@@ -175,7 +235,7 @@ public class CCSuiteLevels : Indicator
     // ── Moonshot (COT + COC combined) ──
 
     private bool _moonshotEnabled = true;
-    [Display(Name = "Enable Moonshot", GroupName = "1) Cherry on Top at Level", Order = 196,
+    [Display(Name = "Enable Moonshot", GroupName = "2) Cherry on Top at Level", Order = 196,
         Description = "COT + COC combined: arriving candle crosses level and closes back in, signal candle sweeps both high and low, closes in extreme quartile")]
     public bool MoonshotEnabled
     {
@@ -184,7 +244,7 @@ public class CCSuiteLevels : Indicator
     }
 
     private Color _moonshotBullColor = Color.FromArgb(255, 0, 255, 200);
-    [Display(Name = "Moonshot Bullish Color", GroupName = "1) Cherry on Top at Level", Order = 197)]
+    [Display(Name = "Moonshot Bullish Color", GroupName = "2) Cherry on Top at Level", Order = 197)]
     public Color MoonshotBullColor
     {
         get => _moonshotBullColor;
@@ -192,7 +252,7 @@ public class CCSuiteLevels : Indicator
     }
 
     private Color _moonshotBearColor = Color.FromArgb(255, 255, 0, 200);
-    [Display(Name = "Moonshot Bearish Color", GroupName = "1) Cherry on Top at Level", Order = 198)]
+    [Display(Name = "Moonshot Bearish Color", GroupName = "2) Cherry on Top at Level", Order = 198)]
     public Color MoonshotBearColor
     {
         get => _moonshotBearColor;
@@ -202,7 +262,7 @@ public class CCSuiteLevels : Indicator
     // ── 1-Candle COT ──
 
     private bool _show1CandleCOT = false;
-    [Display(Name = "Enable 1-Candle COT", GroupName = "1) Cherry on Top at Level", Order = 198,
+    [Display(Name = "Enable 1-Candle COT", GroupName = "2) Cherry on Top at Level", Order = 198,
         Description = "Single candle acts as both arrival and reversal (crosses level, closes back in extreme quartile). Off by default — most traders prefer the 2-candle pattern.")]
     public bool Show1CandleCOT
     {
@@ -211,7 +271,7 @@ public class CCSuiteLevels : Indicator
     }
 
     private Color _cherry1CandleBullColor = Color.FromArgb(255, 100, 180, 100);
-    [Display(Name = "1-Candle Bullish Color", GroupName = "1) Cherry on Top at Level", Order = 199,
+    [Display(Name = "1-Candle Bullish Color", GroupName = "2) Cherry on Top at Level", Order = 199,
         Description = "Color for 1-candle COT (single candle crosses level and closes back in extreme quartile)")]
     public Color Cherry1CandleBullColor
     {
@@ -220,7 +280,7 @@ public class CCSuiteLevels : Indicator
     }
 
     private Color _cherry1CandleBearColor = Color.FromArgb(255, 180, 100, 100);
-    [Display(Name = "1-Candle Bearish Color", GroupName = "1) Cherry on Top at Level", Order = 200,
+    [Display(Name = "1-Candle Bearish Color", GroupName = "2) Cherry on Top at Level", Order = 200,
         Description = "Color for 1-candle COT (single candle crosses level and closes back in extreme quartile)")]
     public Color Cherry1CandleBearColor
     {
@@ -231,13 +291,13 @@ public class CCSuiteLevels : Indicator
     #endregion
 
     // ═══════════════════════════════════════════════════════════════
-    //  2) CHANGE OF CONTEXT AT LEVEL
+    //  3) CHANGE OF CONTEXT AT LEVEL
     // ═══════════════════════════════════════════════════════════════
 
     #region Settings — Change of Context at Level
 
     private MarkerSymbol _ctxBullSymbol = MarkerSymbol.Square;
-    [Display(Name = "Bullish Symbol", GroupName = "2) Change of Context at Level", Order = 220)]
+    [Display(Name = "Bullish Symbol", GroupName = "3) Change of Context at Level", Order = 220)]
     public MarkerSymbol CtxBullSymbol
     {
         get => _ctxBullSymbol;
@@ -245,7 +305,7 @@ public class CCSuiteLevels : Indicator
     }
 
     private Color _ctxBullColor = Color.FromArgb(255, 0, 100, 255);
-    [Display(Name = "Bullish Symbol Color", GroupName = "2) Change of Context at Level", Order = 230)]
+    [Display(Name = "Bullish Symbol Color", GroupName = "3) Change of Context at Level", Order = 230)]
     public Color CtxBullColor
     {
         get => _ctxBullColor;
@@ -253,7 +313,7 @@ public class CCSuiteLevels : Indicator
     }
 
     private MarkerLocation _ctxBullLocation = MarkerLocation.BelowBar;
-    [Display(Name = "Bullish Symbol Location", GroupName = "2) Change of Context at Level", Order = 240)]
+    [Display(Name = "Bullish Symbol Location", GroupName = "3) Change of Context at Level", Order = 240)]
     public MarkerLocation CtxBullLocation
     {
         get => _ctxBullLocation;
@@ -261,7 +321,7 @@ public class CCSuiteLevels : Indicator
     }
 
     private MarkerSymbol _ctxBearSymbol = MarkerSymbol.Square;
-    [Display(Name = "Bearish Symbol", GroupName = "2) Change of Context at Level", Order = 250)]
+    [Display(Name = "Bearish Symbol", GroupName = "3) Change of Context at Level", Order = 250)]
     public MarkerSymbol CtxBearSymbol
     {
         get => _ctxBearSymbol;
@@ -269,7 +329,7 @@ public class CCSuiteLevels : Indicator
     }
 
     private Color _ctxBearColor = Color.FromArgb(255, 180, 0, 255);
-    [Display(Name = "Bearish Symbol Color", GroupName = "2) Change of Context at Level", Order = 260)]
+    [Display(Name = "Bearish Symbol Color", GroupName = "3) Change of Context at Level", Order = 260)]
     public Color CtxBearColor
     {
         get => _ctxBearColor;
@@ -277,7 +337,7 @@ public class CCSuiteLevels : Indicator
     }
 
     private MarkerLocation _ctxBearLocation = MarkerLocation.AboveBar;
-    [Display(Name = "Bearish Symbol Location", GroupName = "2) Change of Context at Level", Order = 270)]
+    [Display(Name = "Bearish Symbol Location", GroupName = "3) Change of Context at Level", Order = 270)]
     public MarkerLocation CtxBearLocation
     {
         get => _ctxBearLocation;
@@ -285,7 +345,7 @@ public class CCSuiteLevels : Indicator
     }
 
     private MarkerSize _ctxMarkerSize = MarkerSize.Small;
-    [Display(Name = "Marker Size", GroupName = "2) Change of Context at Level", Order = 280)]
+    [Display(Name = "Marker Size", GroupName = "3) Change of Context at Level", Order = 280)]
     public MarkerSize CtxMarkerSize
     {
         get => _ctxMarkerSize;
@@ -295,7 +355,7 @@ public class CCSuiteLevels : Indicator
     // ── COC Magic (arriving candle also closed back in = stronger) ──
 
     private bool _ctxMagicEnabled = true;
-    [Display(Name = "Enable Magic COC", GroupName = "2) Change of Context at Level", Order = 290,
+    [Display(Name = "Enable Magic COC", GroupName = "3) Change of Context at Level", Order = 290,
         Description = "Distinguish COC where the arriving candle crossed the level AND closed back in (no closes beyond level)")]
     public bool CtxMagicEnabled
     {
@@ -304,7 +364,7 @@ public class CCSuiteLevels : Indicator
     }
 
     private Color _ctxMagicBullColor = Color.Cyan;
-    [Display(Name = "Magic COC Bullish Color", GroupName = "2) Change of Context at Level", Order = 291)]
+    [Display(Name = "Magic COC Bullish Color", GroupName = "3) Change of Context at Level", Order = 291)]
     public Color CtxMagicBullColor
     {
         get => _ctxMagicBullColor;
@@ -312,7 +372,7 @@ public class CCSuiteLevels : Indicator
     }
 
     private Color _ctxMagicBearColor = Color.Magenta;
-    [Display(Name = "Magic COC Bearish Color", GroupName = "2) Change of Context at Level", Order = 292)]
+    [Display(Name = "Magic COC Bearish Color", GroupName = "3) Change of Context at Level", Order = 292)]
     public Color CtxMagicBearColor
     {
         get => _ctxMagicBearColor;
@@ -322,13 +382,13 @@ public class CCSuiteLevels : Indicator
     #endregion
 
     // ═══════════════════════════════════════════════════════════════
-    //  3) PROBABILITY TABLE
+    //  4) PROBABILITY TABLE
     // ═══════════════════════════════════════════════════════════════
 
     #region Settings — Probability Table
 
     private bool _showProbTable = true;
-    [Display(Name = "Show Probability Table", GroupName = "3) Probability Table", Order = 300)]
+    [Display(Name = "Show Probability Table", GroupName = "4) Probability Table", Order = 300)]
     public bool ShowProbTable
     {
         get => _showProbTable;
@@ -336,7 +396,7 @@ public class CCSuiteLevels : Indicator
     }
 
     private LookbackType _probLookbackType = LookbackType.Signals;
-    [Display(Name = "Lookback Type", GroupName = "3) Probability Table", Order = 310)]
+    [Display(Name = "Lookback Type", GroupName = "4) Probability Table", Order = 310)]
     public LookbackType ProbLookbackType
     {
         get => _probLookbackType;
@@ -344,7 +404,7 @@ public class CCSuiteLevels : Indicator
     }
 
     private int _probLookbackPeriod = 1000;
-    [Display(Name = "Lookback Period", GroupName = "3) Probability Table", Order = 320)]
+    [Display(Name = "Lookback Period", GroupName = "4) Probability Table", Order = 320)]
     [Range(10, 50000)]
     public int ProbLookbackPeriod
     {
@@ -353,7 +413,7 @@ public class CCSuiteLevels : Indicator
     }
 
     private bool _probStoppedOut = true;
-    [Display(Name = "Stopped Out", GroupName = "3) Probability Table", Order = 330)]
+    [Display(Name = "Stopped Out", GroupName = "4) Probability Table", Order = 330)]
     public bool ProbStoppedOut
     {
         get => _probStoppedOut;
@@ -361,7 +421,7 @@ public class CCSuiteLevels : Indicator
     }
 
     private int _probContinuation = 3;
-    [Display(Name = "Continuation Period", GroupName = "3) Probability Table", Order = 340)]
+    [Display(Name = "Continuation Period", GroupName = "4) Probability Table", Order = 340)]
     [Range(1, 20)]
     public int ProbContinuation
     {
@@ -370,7 +430,7 @@ public class CCSuiteLevels : Indicator
     }
 
     private TablePosition _probTablePosition = TablePosition.BottomRight;
-    [Display(Name = "Table Position", GroupName = "3) Probability Table", Order = 350)]
+    [Display(Name = "Table Position", GroupName = "4) Probability Table", Order = 350)]
     public TablePosition ProbTablePosition
     {
         get => _probTablePosition;
@@ -388,6 +448,7 @@ public class CCSuiteLevels : Indicator
         Panel = IndicatorDataProvider.CandlesPanel;
         EnableCustomDrawing = true;
         SubscribeToDrawingEvents(DrawingLayouts.Final);
+        DataSeries.Add(_paintBars);
         DataSeries.Add(_signalSeries);
     }
 
@@ -398,6 +459,38 @@ public class CCSuiteLevels : Indicator
     protected override void OnCalculate(int bar, decimal value)
     {
         _signalSeries[bar] = 0;
+
+        // ── 0) Division Candle Overlay (75% momentum bar coloring) ──
+        // Standalone visual: colors the candle when its close lands in the
+        // extreme division of its own range. Independent of horizontal levels.
+        {
+            var c0 = GetCandle(bar);
+            decimal h0 = c0.High;
+            decimal l0 = c0.Low;
+            decimal c0c = c0.Close;
+            decimal rng0 = h0 - l0;
+
+            if (_showDivisionOverlay && rng0 > 0)
+            {
+                decimal divF = _divOverlayDivisions;
+                decimal lowerTh = l0 + rng0 * (1.0m / divF);
+                decimal upperTh = l0 + rng0 * ((divF - 1.0m) / divF);
+
+                bool upperCond = _divUpperEnabled && c0c >= upperTh;
+                bool lowerCond = _divLowerEnabled && c0c <= lowerTh;
+
+                if (upperCond && !lowerCond)
+                    _paintBars[bar] = _divUpperColor;
+                else if (lowerCond && !upperCond)
+                    _paintBars[bar] = _divLowerColor;
+                else
+                    _paintBars[bar] = null;
+            }
+            else
+            {
+                _paintBars[bar] = null;
+            }
+        }
 
         if (bar == 0)
             return;
@@ -556,7 +649,7 @@ public class CCSuiteLevels : Indicator
             {
                 bool above = _cherryBearLocation == MarkerLocation.AboveBar;
                 decimal price = above ? h : l;
-                int gap = (int)_cherryMarkerSize + 15;
+                int gap = ((int)_cherryMarkerSize + 15) / 2;
                 int yOff = above ? -gap : gap;
 
                 Color col;
@@ -622,7 +715,7 @@ public class CCSuiteLevels : Indicator
             {
                 bool above = _cherryBullLocation == MarkerLocation.AboveBar;
                 decimal price = above ? h : l;
-                int gap = (int)_cherryMarkerSize + 15;
+                int gap = ((int)_cherryMarkerSize + 15) / 2;
                 int yOff = above ? -gap : gap;
 
                 Color col;
@@ -690,8 +783,8 @@ public class CCSuiteLevels : Indicator
                 {
                     bool above = _ctxBearLocation == MarkerLocation.AboveBar;
                     decimal price = above ? h : l;
-                    int cotOffset = (int)_cherryMarkerSize + 15;
-                    int gap = cotOffset + (int)_ctxMarkerSize + 5;
+                    int cotOffset = ((int)_cherryMarkerSize + 15) / 2;
+                    int gap = cotOffset + ((int)_ctxMarkerSize + 5) / 2;
                     int yOff = above ? -gap : gap;
 
                     Color col = (_ctxMagicEnabled && cocMagicAtLevel) ? _ctxMagicBearColor : _ctxBearColor;
@@ -739,8 +832,8 @@ public class CCSuiteLevels : Indicator
                 {
                     bool above = _ctxBullLocation == MarkerLocation.AboveBar;
                     decimal price = above ? h : l;
-                    int cotOffset = (int)_cherryMarkerSize + 15;
-                    int gap = cotOffset + (int)_ctxMarkerSize + 5;
+                    int cotOffset = ((int)_cherryMarkerSize + 15) / 2;
+                    int gap = cotOffset + ((int)_ctxMarkerSize + 5) / 2;
                     int yOff = above ? -gap : gap;
 
                     Color col = (_ctxMagicEnabled && cocMagicAtLevel) ? _ctxMagicBullColor : _ctxBullColor;

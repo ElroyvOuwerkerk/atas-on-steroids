@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("AtasOnSteroids")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f740ac8fad7f35d054700b637b5e5767aa9c3f1d")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c0f1b7973ee0ddd2bd914a322d7d2ee2ad510d88")]
 [assembly: System.Reflection.AssemblyProductAttribute("AtasOnSteroids")]
 [assembly: System.Reflection.AssemblyTitleAttribute("AtasOnSteroids")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
