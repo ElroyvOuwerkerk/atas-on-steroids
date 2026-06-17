@@ -213,21 +213,31 @@ def _epoch(iso: str) -> int:
         return 0
 
 
+def _record(fam: str, lv: Level) -> str:
+    return (
+        f"{fam}|{lv.kind}|{lv.price}|{lv.price2}|{lv.color.lstrip('#')}|{lv.fill}"
+        f"|{lv.name}|{_epoch(lv.start)}|{_epoch(lv.end)}"
+    )
+
+
 def _csv(s: LevelSet | None) -> str:
-    """
-    Paste format for the Pine indicator. One record per object:
-        kind|price|price2|borderRRGGBB|fillRRGGBBAA|name|startEpoch|endEpoch
-    records ';'-separated. kind: L=line/ray, R=rectangle, Z=full-width zone.
-    0 epoch = no anchor (L/Z: full width; R end: extends right).
-    """
+    """One family's records, ';'-separated (see _record for field order)."""
     if not s or not s.levels:
         return ""
+    return ";".join(_record(s.symbol, lv) for lv in s.levels)
+
+
+def _csv_all(sets: dict[str, LevelSet]) -> str:
+    """
+    All families combined — the string the Pine indicator wants. Every record
+    is family-tagged, so the indicator self-selects by the chart's symbol:
+        family|kind|price|price2|borderRRGGBB|fillRRGGBBAA|name|startEpoch|endEpoch
+    family: ES / NQ / …   kind: L=line/ray, R=rectangle, Z=full-width zone.
+    """
     out = []
-    for lv in s.levels:
-        out.append(
-            f"{lv.kind}|{lv.price}|{lv.price2}|{lv.color.lstrip('#')}|{lv.fill}"
-            f"|{lv.name}|{_epoch(lv.start)}|{_epoch(lv.end)}"
-        )
+    for sym in sorted(sets):
+        for lv in sets[sym].levels:
+            out.append(_record(sym, lv))
     return ";".join(out)
 
 
@@ -240,6 +250,13 @@ async def list_levels():
         "symbols": sorted(sets.keys()),
         "sets": list(sets.values()),
     }
+
+
+# Fixed paths must precede the /{symbol} routes so they aren't shadowed.
+@router.get("/all/csv", response_class=PlainTextResponse)
+async def get_all_csv():
+    """Combined, family-tagged feed for the symbol-aware Pine indicator."""
+    return _csv_all(_levels())
 
 
 @router.get("/{symbol}", response_model=LevelSet)
@@ -287,11 +304,18 @@ _VIEW_HTML = """<!doctype html>
 <body>
   <h1>ATAS → TradingView Levels</h1>
   <div class="ws" id="ws"></div>
+  <div id="combined"></div>
   <div id="root"></div>
-  <div class="muted"><b>Save your workspace in ATAS</b> to refresh this list, then paste a
-     symbol's string into the "ATAS Levels" Pine indicator. ES levels apply to ES &amp; MES;
-     NQ levels apply to NQ &amp; MNQ.</div>
+  <div class="muted"><b>Save your workspace in ATAS</b> to refresh. The single
+     <b>Copy all</b> string above works on <b>every</b> chart — the "ATAS Levels"
+     indicator auto-picks ES levels on ES/MES and NQ levels on NQ/MNQ. (Per-symbol
+     strings below are just for reference.)</div>
 <script>
+const ep = (iso) => { if (!iso) return 0; const d = new Date(iso); return isNaN(d) ? 0 : Math.floor(d.getTime()/1000); };
+const rec = (fam, l) =>
+  fam + '|' + (l.kind||'L') + '|' + l.price + '|' + (l.price2||0) + '|' + (l.color||'#FFFFFF').replace('#','')
+  + '|' + (l.fill||'') + '|' + (l.name||'') + '|' + ep(l.start) + '|' + ep(l.end);
+
 async function load() {
   let data;
   try { data = await (await fetch('/api/levels')).json(); }
@@ -301,13 +325,18 @@ async function load() {
   const root = document.getElementById('root');
   const sets = (data.sets || []).sort((a,b)=> a.symbol.localeCompare(b.symbol));
   if (!sets.length) { root.innerHTML = '<div class="card">No levels found.</div>'; return; }
+
+  const allCsv = sets.flatMap(s => (s.levels||[]).map(l => rec(s.symbol, l))).join(';');
+  const total = sets.reduce((n,s)=> n + (s.levels||[]).length, 0);
+  document.getElementById('combined').innerHTML = `<div class="card">
+      <div class="sym">All charts <span class="count">(${total} objects — works on ES/MES/NQ/MNQ)</span></div>
+      <textarea id="ta_all" readonly>${allCsv}</textarea>
+      <button onclick="copy('ta_all')">Copy all</button>
+    </div>`;
+
   root.innerHTML = sets.map(s => {
     const lv = s.levels || [];
-    const ep = (iso) => { if (!iso) return 0; const d = new Date(iso); return isNaN(d) ? 0 : Math.floor(d.getTime()/1000); };
-    const csv = lv.map(l =>
-      (l.kind||'L') + '|' + l.price + '|' + (l.price2||0) + '|' + (l.color||'#FFFFFF').replace('#','')
-      + '|' + (l.fill||'') + '|' + (l.name||'') + '|' + ep(l.start) + '|' + ep(l.end)
-    ).join(';');
+    const csv = lv.map(l => rec(s.symbol, l)).join(';');
     const rows = lv.map(l => {
       const st = l.start ? new Date(l.start).toLocaleDateString() : '';
       const px = (l.kind==='L') ? l.price : (l.price + ' – ' + l.price2);

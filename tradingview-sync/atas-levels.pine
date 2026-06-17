@@ -1,27 +1,28 @@
 //@version=6
 // ─────────────────────────────────────────────────────────────────────────────
-//  ATAS Levels — mirrors ATAS drawings onto a TradingView chart:
-//  horizontal rays/lines, rectangles, and HighlightY zones, with original
-//  colours, fills, labels, and time anchors.
+//  ATAS Levels — mirrors ATAS drawings (rays/lines, rectangles, HighlightY
+//  zones) onto a TradingView chart, with original colours, fills, labels and
+//  time anchors.
+//
+//  SYMBOL-AWARE: the input holds BOTH families (ES and NQ); the indicator reads
+//  the chart's symbol and draws only the matching family. So one config works
+//  on ES, MES, NQ and MNQ — switch the ticker and it instantly redraws the
+//  right set, no re-pasting.
 //
 //  Data format (from the Level Sync backend; one record per object, ';'-sep):
-//        kind|price|price2|borderRRGGBB|fillRRGGBBAA|name|startEpoch|endEpoch
-//  kind: L = line/ray   R = rectangle   Z = full-width zone
-//  epoch 0 = no anchor (L/Z: full width; R end: extends right)
+//      family|kind|price|price2|borderRRGGBB|fillRRGGBBAA|name|startEpoch|endEpoch
+//  family: ES / NQ / …   kind: L = line/ray   R = rectangle   Z = full-width zone
+//  epoch 0 = no anchor (L/Z full width; R end extends right)
 //
-//  Feed it via:
-//   • Manual: copy from http://localhost:3001/api/levels/view/page and paste
-//     into the "Levels" input below.
-//   • Auto:   the Tampermonkey userscript (atas-levels.user.js).
-//
-//  Prices are identical across a contract family — use the ES string on
-//  ES *and* MES charts, the NQ string on NQ *and* MNQ.
+//  Feed it via the copy page (Copy all) or the Tampermonkey userscript.
 // ─────────────────────────────────────────────────────────────────────────────
 indicator("ATAS Levels", overlay = true,
      max_lines_count = 500, max_labels_count = 500, max_boxes_count = 500)
 
 // ── Inputs ──
-levelsStr   = input.text_area("", title = "Levels (paste from ATAS sync page)")
+levelsStr   = input.text_area("", title = "Levels (paste 'Copy all' from the ATAS sync page)")
+famOverride = input.string("Auto", title = "Chart family", options = ["Auto", "ES", "NQ"],
+     tooltip = "Auto = detect from the chart symbol. Override if detection misses.")
 showLabels  = input.bool(true,   title = "Show labels")
 showPrices  = input.bool(true,   title = "Show price values in labels")
 labelSizeS  = input.string("Normal", title = "Label size", options = ["Tiny", "Small", "Normal", "Large"])
@@ -29,6 +30,13 @@ labelOffset = input.int(3,       title = "Label offset (bars right of last candl
 lineWidth   = input.int(1,       title = "Line width", minval = 1, maxval = 5)
 lineStyleS  = input.string("Solid", title = "Line style", options = ["Solid", "Dashed", "Dotted"])
 showBoxes   = input.bool(true,   title = "Show rectangles / zones")
+
+// ── Chart family (mirror of the backend's _group, micro → mini) ──
+familyOf(string root) =>
+    r = str.upper(root)
+    r == "MES" ? "ES" : r == "MNQ" ? "NQ" : r == "MGC" ? "GC" : r == "MYM" ? "YM" : r == "M2K" ? "RTY" : r
+
+chartFam = famOverride != "Auto" ? famOverride : familyOf(syminfo.root)
 
 // ── Helpers ──
 hexDigit(string c) =>
@@ -38,7 +46,6 @@ hexDigit(string c) =>
 hexByte(string h, int i) =>
     hexDigit(str.substring(h, i, i + 1)) * 16 + hexDigit(str.substring(h, i + 1, i + 2))
 
-// "RRGGBB" → [r, g, b]; short/invalid input → white
 hexRgb(string hex) =>
     h = str.upper(hex)
     ok = str.length(h) >= 6
@@ -47,7 +54,6 @@ hexRgb(string hex) =>
     b = ok ? hexByte(h, 4) : 255
     [r, g, b]
 
-// "RRGGBBAA" → colour with alpha applied (AA missing → opaque)
 hexFill(string hex) =>
     [r, g, b] = hexRgb(hex)
     a = str.length(hex) >= 8 ? hexByte(str.upper(hex), 6) : 255
@@ -80,19 +86,18 @@ if barstate.islast
         recs = str.split(levelsStr, ";")
         for rec in recs
             f = str.split(rec, "|")
-            if array.size(f) >= 8
-                kind     = array.get(f, 0)
-                price    = str.tonumber(array.get(f, 1))
-                price2   = str.tonumber(array.get(f, 2))
-                borderHx = array.get(f, 3)
-                fillHx   = array.get(f, 4)
-                name     = array.get(f, 5)
-                startSec = str.tonumber(array.get(f, 6))
-                endSec   = str.tonumber(array.get(f, 7))
+            if array.size(f) >= 9 and array.get(f, 0) == chartFam
+                kind     = array.get(f, 1)
+                price    = str.tonumber(array.get(f, 2))
+                price2   = str.tonumber(array.get(f, 3))
+                borderHx = array.get(f, 4)
+                fillHx   = array.get(f, 5)
+                name     = array.get(f, 6)
+                startSec = str.tonumber(array.get(f, 7))
+                endSec   = str.tonumber(array.get(f, 8))
                 if not na(price)
                     [r, g, b]  = hexRgb(borderHx)
                     col        = color.rgb(r, g, b)
-                    // readable label text colour on the coloured chip
                     lum        = 0.299 * r + 0.587 * g + 0.114 * b
                     txtCol     = lum > 145 ? color.black : color.white
                     hasStart   = not na(startSec) and startSec > 0
@@ -117,13 +122,11 @@ if barstate.islast
                         labelPrice := (top + bot) / 2
                         fillCol = str.length(fillHx) >= 6 ? hexFill(fillHx) : color.new(col, 90)
                         if kind == "Z" or not hasStart
-                            // full-width zone
                             bx = box.new(bar_index, top, bar_index + 1, bot,
                                  border_color = col, border_width = 1, extend = extend.both,
                                  bgcolor = fillCol)
                             array.push(bxs, bx)
                         else
-                            // time-anchored rectangle; no end → extends right
                             l = int(startSec) * 1000
                             rgt = hasEnd ? int(endSec) * 1000 : time
                             bx = box.new(l, top, rgt, bot, xloc = xloc.bar_time,
@@ -132,9 +135,8 @@ if barstate.islast
                                  bgcolor = fillCol)
                             array.push(bxs, bx)
 
-                    // Chip text: price value (axis mark) + the ATAS label when present.
-                    // Lines always get a price chip; boxes/zones only when named
-                    // (price ranges on 70+ unnamed rectangles would be noise).
+                    // Chip text: price value (axis mark) + ATAS label.
+                    // Lines always get a price chip; boxes only when named.
                     chipText = ""
                     if kind == "L"
                         priceTxt = str.tostring(price, format.mintick)
@@ -147,7 +149,6 @@ if barstate.islast
                         chipText := showPrices ? rangeTxt + " · " + name : name
 
                     if showLabels and str.length(chipText) > 0
-                        // filled chip hugging the price axis, in the object's colour
                         lb = label.new(bar_index + labelOffset, labelPrice, chipText,
                              xloc = xloc.bar_index, yloc = yloc.price,
                              style = label.style_label_left, color = col,

@@ -39,21 +39,25 @@ No ATAS-side indicator is needed.
 
 ## Data format
 
-`GET /api/levels/{symbol}/csv` → one record per object, `;`-separated:
+`GET /api/levels/all/csv` → the combined feed the indicator wants: one record
+per object, family-tagged, `;`-separated:
 
 ```
-kind|price|price2|borderRRGGBB|fillRRGGBBAA|name|startEpochSec|endEpochSec
-L|6078.75|0.0|FF733B||key (support)|1750073400|0
-R|6307.25|6322.0|FFFFFF|FFFFFF1A||1775793600|1776312600
-Z|6903.5|6886.75|FFFFFF|FFFFFF2C|strong level|0|0
+family|kind|price|price2|borderRRGGBB|fillRRGGBBAA|name|startEpochSec|endEpochSec
+ES|L|6078.75|0.0|FF733B||key (support)|1750073400|0
+ES|R|6307.25|6322.0|FFFFFF|FFFFFF1A||1775793600|1776312600
+NQ|Z|25490.0|25456.0|FFFFFF|FFFFFF2C|strong level|0|0
 ```
 
-`kind`: **L** = horizontal ray/line, **R** = rectangle, **Z** = HighlightY zone
-(full chart width). Epoch `0` = no anchor (L/Z: full width; R end: extends
-right). Fill keeps ATAS's alpha so boxes stay translucent.
+The indicator draws only records whose **family** matches the chart, so the one
+combined string works on every chart. `kind`: **L** = ray/line, **R** =
+rectangle, **Z** = HighlightY zone (full width). Epoch `0` = no anchor (L/Z:
+full width; R end: extends right). Fill keeps ATAS's alpha so boxes stay
+translucent.
 
 Symbols are grouped by contract family: `ESM6`, `MES1!`, `ES@CME_Ind` → `ES`;
 the NQ family → `NQ`. Hidden objects (`Visible: false`) are skipped.
+(`GET /api/levels/{symbol}/csv` still returns just one family, for reference.)
 
 ## Setup
 
@@ -63,9 +67,14 @@ Already part of the trading-journal backend (auto-starts via launchd). Check
 with colour swatches, labels, and anchor dates.
 
 ### 2. TradingView (Pine)
-1. Open **Pine Editor** → paste `atas-levels.pine` → **Save** as "ATAS Levels" → **Add to chart**.
-2. On each other chart: **Indicators → My scripts → ATAS Levels**.
-3. Apply to the charts you trade — e.g. **MES and MNQ**.
+1. Open **Pine Editor** → paste `atas-levels.pine` → **Save** as "ATAS Levels"
+   (Save is required — "Add to chart" alone does **not** put it in *My scripts*).
+2. **Add to chart**, and on any other chart add it via **Indicators → My
+   scripts → ATAS Levels**.
+3. The indicator is **symbol-aware** — one config works on ES, MES, NQ and MNQ.
+   Switch the ticker on a chart and it instantly redraws the right family. If
+   detection ever misses, set the indicator's **Chart family** input from Auto
+   to ES or NQ.
 
 ### 3. Browser helper (Tampermonkey — required for full automation)
 1. Install the [Tampermonkey](https://www.tampermonkey.net/) extension.
@@ -73,28 +82,28 @@ with colour swatches, labels, and anchor dates.
    `atas-levels.user.js` → save (Cmd+S).
 3. Open a TradingView chart — an **ATAS Levels** widget appears bottom-right.
    Allow the localhost connection when Tampermonkey asks.
-4. Leave the **auto** checkbox on. The widget shows per family: object count,
-   `✓` = chart in sync, `…` = update pending, `▸` = family of the open chart.
+4. Leave the **auto** checkbox on. The widget shows per-family object counts and
+   `✓ synced` / `… pending`. It re-fills the indicator only when the feed
+   changes (i.e. when you save the ATAS workspace) — not on ticker switches.
 
 ## Daily use
 
 **Fully automatic (with the Tampermonkey userscript, "auto" checked):**
 
 1. Finish your analysis in ATAS → **save the workspace**.
-2. That's it. Within ~5–10 seconds the userscript notices the change, detects
-   which family the open TradingView chart belongs to (MES → ES, MNQ → NQ),
-   opens the *ATAS Levels* settings, fills the input, and clicks OK by itself.
-   You'll see the settings dialog flash briefly, then the chart redraws.
+2. That's it. Within ~5–10 seconds the userscript fills the *ATAS Levels*
+   indicator on the open chart with the combined feed and clicks OK (a brief
+   settings-dialog flash). Because the indicator self-selects by symbol,
+   switching the ticker afterwards needs no action — it redraws instantly.
 
 The auto-apply waits politely: it won't fire while you're typing or while any
-TradingView dialog is open (it retries on the next poll). Each chart tab syncs
-the symbol it's showing; switch tabs and they catch up on their own.
+TradingView dialog is open (it retries on the next poll).
 
 **Manual fallback (if auto ever breaks after a TradingView UI update):**
 
-- Click **Copy ES/NQ** in the widget (or on the copy page) → open *ATAS
-  Levels* settings → paste into *Levels* → OK. The **Push** button does the
-  fill+OK for you on demand.
+- Click **Copy all** in the widget (or on the copy page) → open *ATAS Levels*
+  settings → paste into *Levels* → OK. The **Push now** button does the fill+OK
+  for you on demand.
 
 ## Notes
 
