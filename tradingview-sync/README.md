@@ -91,19 +91,32 @@ with colour swatches, labels, and anchor dates.
 **Fully automatic (with the Tampermonkey userscript, "auto" checked):**
 
 1. Finish your analysis in ATAS → **save the workspace**.
-2. That's it. Within ~5–10 seconds the userscript fills the *ATAS Levels*
-   indicator on the open chart with the combined feed and clicks OK (a brief
-   settings-dialog flash). Because the indicator self-selects by symbol,
-   switching the ticker afterwards needs no action — it redraws instantly.
+2. Within ~15 seconds the userscript fills the *ATAS Levels* indicator on the
+   open browser chart, clicks OK, and then **saves the TradingView layout**
+   (so the change persists server-side). Because the indicator self-selects by
+   symbol, switching the ticker afterwards needs no action — it redraws instantly.
 
 The auto-apply waits politely: it won't fire while you're typing or while any
 TradingView dialog is open (it retries on the next poll).
 
+### Desktop app / other devices
+
+The userscript only runs in a **web browser** — not the TradingView desktop app.
+So one browser tab (with the userscript) acts as the **engine**: it applies the
+levels and saves the layout to your TradingView account. The desktop app (or
+phone, or another browser) then shows the levels **after it reloads that layout**
+— TradingView does not live-sync an already-open layout. In practice:
+
+1. Keep a browser tab open with the userscript (it can sit in the background).
+2. Save in ATAS → the browser tab applies + saves the layout.
+3. In the desktop app, **reload/re-open the layout** to pull the update.
+
 **Manual fallback (if auto ever breaks after a TradingView UI update):**
 
 - Click **Copy all** in the widget (or on the copy page) → open *ATAS Levels*
-  settings → paste into *Levels* → OK. The **Push now** button does the fill+OK
-  for you on demand.
+  settings → paste into *Levels* → OK, then **Cmd/Ctrl+S** to save the layout.
+  The **Push now** button does the fill + OK + layout-save for you on demand
+  (it only pops a diagnostic if something fails).
 
 ## Notes
 

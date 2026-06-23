@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ATAS Levels → TradingView
 // @namespace    atas-on-steroids
-// @version      3.8
+// @version      3.12
 // @description  Auto-syncs ATAS-drawn levels onto TradingView. The Pine indicator is symbol-aware (one config holds both ES and NQ and self-selects), so this only fills it when you save the workspace in ATAS — no action on ticker switches.
 // @match        https://www.tradingview.com/chart/*
 // @match        https://*.tradingview.com/chart/*
@@ -14,7 +14,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '3.8';
+  const VERSION = '3.12';
   const BACKEND = 'http://localhost:3001';
   const POLL_MS = 15000;   // levels change only on workspace save; 15s is plenty
 
@@ -73,6 +73,23 @@
     el.dispatchEvent(new MouseEvent('mouseup', o));
     el.dispatchEvent(new MouseEvent('click', o));
   }
+  // Fill a textarea the way a real paste does. TradingView's editor ignores a
+  // programmatically-set .value, so use the browser's native insertText (fires
+  // a trusted input event the editor accepts); fall back to the React setter.
+  function fillTextarea(ta, value, t) {
+    ta.focus();
+    try { ta.select(); } catch (e) {}
+    let ok = false;
+    try { ok = document.execCommand('insertText', false, value); } catch (e) {}
+    if (!ok || ta.value !== value) {
+      const setter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;
+      setter.call(ta, value);
+      ta.dispatchEvent(new InputEvent('input', { bubbles: true, inputType: 'insertText', data: value }));
+    }
+    ta.dispatchEvent(new Event('change', { bubbles: true }));
+    if (t) t.push(`fill: ${ta.value.length}/${value.length} chars` + (ta.value === value ? ' ok' : ' MISMATCH'));
+  }
+
   // Find the textarea that belongs to OUR indicator's settings dialog — the one
   // whose surrounding panel mentions "ATAS Levels" / the Levels input label.
   // (Avoids latching onto a stray dialog, e.g. the timeframe settings.)
@@ -173,10 +190,7 @@
     const textarea = await openSettings(titles[0], t);
     if (!textarea) return { ok: false, why: 'settings panel would not open (see methods above)', trace: t };
 
-    const setter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;
-    setter.call(textarea, csv);
-    textarea.dispatchEvent(new Event('input', { bubbles: true }));
-    textarea.dispatchEvent(new Event('change', { bubbles: true }));
+    fillTextarea(textarea, csv, t);
     await sleep(150);
 
     // OK button: scope to the panel containing the textarea, else whole document.
@@ -188,7 +202,40 @@
     t.push(`OK button: ${ok ? 'yes' : 'no'}`);
     if (!ok) return { ok: false, why: 'OK button not found', trace: t };
     realClick(ok);
+    await sleep(400);
+    saveLayout(t);   // persist into the chart layout so it survives reloads / shows everywhere
     return { ok: true, trace: t };
+  }
+
+  // Persist the chart layout server-side so the desktop app / other devices
+  // pick it up. A synthetic Cmd+S doesn't trigger TradingView's save, so click
+  // the real layout Save control in the top header. Logs candidates so we can
+  // lock the exact selector.
+  function saveLayout(t) {
+    // cheap shortcut attempt first (harmless if ignored)
+    for (const mods of [{ metaKey: true }, { ctrlKey: true }]) {
+      const init = { key: 's', code: 'KeyS', keyCode: 83, which: 83, bubbles: true, cancelable: true, ...mods };
+      document.dispatchEvent(new KeyboardEvent('keydown', init));
+      document.dispatchEvent(new KeyboardEvent('keyup', init));
+    }
+
+    const header = document.querySelector('#header-toolbar, [class*="headerToolbar" i], [class*="header-toolbar" i]') || document;
+    const labelOf = (e) => ((e.getAttribute('aria-label') || '') + ' ' + (e.getAttribute('data-name') || '') + ' ' + (e.title || '')).trim();
+    const cands = [...header.querySelectorAll('button, [role="button"], [data-name]')]
+      .filter((e) => /save/i.test(labelOf(e)));
+    if (t) t.push('save candidates: ' + (cands.map((e) => e.getAttribute('data-name') || e.getAttribute('aria-label') || e.title).filter(Boolean).slice(0, 8).join(' | ') || 'NONE'));
+
+    // Prefer a direct layout-save control; avoid "save as", template, "save-load" menu.
+    const btn = cands.find((e) => /(^|[^-])save-?(chart-?)?layout/i.test(e.getAttribute('data-name') || ''))
+             || cands.find((e) => /^save$/i.test((e.getAttribute('aria-label') || '').trim()) && !/template|as/i.test(labelOf(e)))
+             || cands.find((e) => /save/i.test(e.getAttribute('data-name') || '') && !/load|as|template/i.test(e.getAttribute('data-name') || ''))
+             || cands[0];
+    if (btn) {
+      try { realClick(btn); if (t) t.push('clicked save: ' + (btn.getAttribute('data-name') || btn.getAttribute('aria-label') || btn.title || '?')); }
+      catch (e) { if (t) t.push('save click threw: ' + e.message); }
+    } else if (t) {
+      t.push('no save button matched');
+    }
   }
 
   async function autoTick() {
@@ -249,10 +296,15 @@
       } catch (e) {
         res = { ok: false, why: 'exception: ' + (e && e.message), trace };
       }
-      // Unmissable diagnostic so we can see exactly where it stops.
-      alert('ATAS Levels v' + VERSION + ' — Push trace:\n\n' + (res.trace || trace).join('\n') +
-            '\n\nRESULT: ' + (res.ok ? 'OK ✓' : 'FAILED — ' + res.why));
-      if (res.ok) { lastApplied = combined; flash('✓ pushed'); } else flash(`push failed: ${res.why}`);
+      if (res.ok) {
+        lastApplied = combined;
+        flash('✓ pushed & saved');
+      } else {
+        // Only surface the full diagnostic when something actually fails.
+        flash(`push failed: ${res.why}`);
+        alert('ATAS Levels v' + VERSION + ' — Push failed\n\n' + (res.trace || trace).join('\n') +
+              '\n\nRESULT: ' + res.why);
+      }
       render();
     };
   }

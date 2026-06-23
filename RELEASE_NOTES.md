@@ -10,6 +10,14 @@ Format: reverse-chronological. Newest entries at the top.
 
 Work currently in progress on the working tree (not yet committed).
 
+### Changed — Level Sync userscript (v3.x → v3.12)
+- `tradingview-sync/atas-levels.user.js` — hardened the unattended apply against the live TradingView DOM and added server-side persistence:
+  - **Native-paste fill**: sets the Levels input via `document.execCommand('insertText')` (a trusted input event TradingView's editor accepts) instead of a programmatic `.value` set, which TV ignored — that bug silently dropped boxes/zones on auto-apply while manual paste worked.
+  - **Correct settings gear**: scopes to the ATAS Levels legend row and clicks the button whose label is exactly "Settings" (earlier it matched "Show interval settings" and opened the timeframe dialog); opens via a full pointer sequence (`pointerdown/mousedown/up/click`), since a bare `.click()`/synthetic `dblclick` don't register.
+  - **Right dialog detection**: identifies the indicator's panel by its "ATAS Levels"/"Levels (paste…)" text, ignoring stray dialogs.
+  - **Layout persistence**: after applying, saves the TradingView layout (so the change reaches the **desktop app / other devices**, which the browser-only userscript can't touch directly — they pick it up on layout reload). Clicks the header Save control; synthetic Cmd+S kept as a cheap first attempt.
+  - Poll interval relaxed to 15s; widget redraws only on change; version stamped in the widget + popup; **Push now** only shows a diagnostic on failure.
+
 ### Changed — CC Suite Levels
 - `indicators/CCSuiteLevels.cs` — absorbed the **Division Candle Overlay (75% momentum)** feature from CC Suite, so one indicator now covers all three strategies (COT/COC at level, Moonshot, momentum bar colouring): new master toggle + settings group "1) Division Candle Overlay" (divisions count, upper/lower zone toggles and colours), `PaintbarsDataSeries` bar colouring in `OnCalculate`; existing groups renumbered (Cherry → 2, COC → 3, Probability Table → 4). CC Suite can be removed from charts.
 - `indicators/CCSuiteLevels.cs` — marker-to-bar distance halved (COT gap `(size+15)/2`, stacked COC gap halved proportionally) after feedback that markers sat too far from the candles.
