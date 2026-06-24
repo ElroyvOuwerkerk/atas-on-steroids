@@ -118,6 +118,25 @@ phone, or another browser) then shows the levels **after it reloads that layout*
   The **Push now** button does the fill + OK + layout-save for you on demand
   (it only pops a diagnostic if something fails).
 
+## Alerts (price entering a zone/box)
+
+The indicator can fire a TradingView alert when price **enters** a highlight or
+rectangle (once on entry, not while it sits inside). Set it up once:
+
+1. In the indicator settings → **Alerts** group, pick what should alert
+   (only highlights/zones on by default; rectangles and lines off).
+2. On the chart, **Alerts → Create alert** → Condition: **ATAS Levels** →
+   **"Any alert() function call"** → choose how you're notified (app push,
+   popup, sound, email) → Create.
+
+One alert covers **all** zones/boxes on that chart, and automatically includes
+new ones you add later (they flow through the same indicator). The alert message
+includes the level's name, price range, and symbol. Alerts fire on the chart's
+family, so an alert on the MNQ chart triggers on your NQ zones.
+
+Note: this is independent of the ATAS-side Telegram zone alerts — TradingView
+alerts give you native app/desktop notifications from the TV side.
+
 ## Notes
 
 - The backend always parses the **most recently saved** `.aws` workspace.
