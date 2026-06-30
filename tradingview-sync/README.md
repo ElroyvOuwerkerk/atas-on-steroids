@@ -134,6 +134,12 @@ new ones you add later (they flow through the same indicator). The alert message
 includes the level's name, price range, and symbol. Alerts fire on the chart's
 family, so an alert on the MNQ chart triggers on your NQ zones.
 
+**Time rule for rectangles:** highlights are timeless (full-width), so they
+always alert when price reaches them. Rectangles, however, only alert **while
+their time window is still active** — once the chart has passed a box's end
+time, it no longer fires (matching the ATAS-side rule). So you can safely enable
+rectangle alerts without getting pinged on stale, historical boxes.
+
 Note: this is independent of the ATAS-side Telegram zone alerts — TradingView
 alerts give you native app/desktop notifications from the TV side.
 
