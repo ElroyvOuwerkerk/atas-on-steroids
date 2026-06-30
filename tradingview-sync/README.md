@@ -147,13 +147,11 @@ alerts give you native app/desktop notifications from the TV side.
 
 - The backend always parses the **most recently saved** `.aws` workspace.
 - Mirrored types: `HorizontalRay`, `HLine`, `RectangleObj`, `HighlightY`.
-- Every line gets a colour-filled chip just right of the last candle, hugging
-  the price axis and showing the level's **price value** — e.g.
-  `6078.75 · key (support)` — the closest Pine allows to a price-scale mark
-  (only fixed-count `plot`s get true axis labels, and levels are dynamic).
-  Named boxes/zones get a price-range chip (`6886.75–6903.5 · strong level`).
-  Chip text auto-switches black/white based on the colour's luminance;
-  "Show price values in labels" toggles the prices off.
+- **Only horizontal lines** get a chip — a colour-filled label just right of the
+  last candle, hugging the price axis, showing the level's **price value** (and
+  name) — e.g. `6078.75 · key (support)`. Zones and rectangles are drawn
+  without labels (kept clean). Chip text auto-switches black/white based on the
+  colour's luminance; "Show price values in labels" toggles the prices off.
 - Anchor times are interpreted in the machine's local timezone; a small offset
   in where a ray/box *starts* doesn't affect its price.
 - TradingView caps: 500 lines + 500 boxes + 500 labels per indicator — ES

@@ -10,6 +10,9 @@ Format: reverse-chronological. Newest entries at the top.
 
 Work currently in progress on the working tree (not yet committed).
 
+### Changed — Pine labels
+- `tradingview-sync/atas-levels.pine` — labels (price-value chips) now render **only for horizontal lines**. Zones (HighlightY) and rectangles are drawn without labels for a cleaner chart.
+
 ### Added — TradingView alerts on zones/boxes (Pine)
 - `tradingview-sync/atas-levels.pine` — the indicator now fires `alert()` when price **enters** a highlight (Z) or rectangle (R) — once on entry, tracked per-object via persisted inside/outside state, `alert.freq_once_per_bar`. New **Alerts** settings group: toggle highlights / rectangles / lines (only highlights/zones on by default; rectangles and lines off). **Rectangle alerts are time-gated** — a box only fires while its time window is still active (end epoch ≥ `timenow`); once the chart passes the box's end it's ignored. Zones are timeless (end 0) so always active. Alert targets are parsed once into `var` arrays for the chart's family (re-parses on input/symbol change). Setup: create one alert on the indicator with condition "Any alert() function call"; the message carries the level name, price range, and symbol. Independent of the ATAS-side Telegram alerts.
 

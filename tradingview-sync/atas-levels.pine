@@ -141,18 +141,14 @@ if barstate.islast
                                  bgcolor = fillCol)
                             array.push(bxs, bx)
 
-                    // Chip text: price value (axis mark) + ATAS label.
-                    // Lines always get a price chip; boxes only when named.
+                    // Labels are only shown for horizontal lines (price + name) —
+                    // never for zones or rectangles.
                     chipText = ""
                     if kind == "L"
                         priceTxt = str.tostring(price, format.mintick)
                         chipText := showPrices
                              ? (str.length(name) > 0 ? priceTxt + " · " + name : priceTxt)
                              : name
-                    else if str.length(name) > 0
-                        rangeTxt = str.tostring(math.min(price, price2), format.mintick)
-                             + "–" + str.tostring(math.max(price, price2), format.mintick)
-                        chipText := showPrices ? rangeTxt + " · " + name : name
 
                     if showLabels and str.length(chipText) > 0
                         lb = label.new(bar_index + labelOffset, labelPrice, chipText,
