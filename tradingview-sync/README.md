@@ -140,8 +140,18 @@ their time window is still active** — once the chart has passed a box's end
 time, it no longer fires (matching the ATAS-side rule). So you can safely enable
 rectangle alerts without getting pinged on stale, historical boxes.
 
-Note: this is independent of the ATAS-side Telegram zone alerts — TradingView
-alerts give you native app/desktop notifications from the TV side.
+**Per-zone cooldown:** after a zone alerts, it won't re-fire for the cooldown
+window (default 15 min; `0` disables) — avoids repeat pings while price hovers
+at a zone edge.
+
+**Important — the snapshot rule:** a TradingView alert **freezes** the
+indicator's input the moment you create it, and never updates it afterward
+([TradingView docs](https://www.tradingview.com/support/solutions/43000597494-alerts-on-alert-function/)).
+Since the userscript continuously rewrites the input with your latest zones,
+an alert created earlier keeps firing on **old** zones and ignores new ones. So
+create the alert **after** finalizing your zones (widget shows ✓ synced), and
+recreate it whenever your zones change. This is independent of the ATAS-side
+Telegram zone alerts.
 
 ## Notes
 

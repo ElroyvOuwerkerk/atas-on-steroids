@@ -36,6 +36,8 @@ alertZones  = input.bool(true,  title = "Alert on highlights (zones)", group = "
 alertBoxes  = input.bool(false, title = "Alert on rectangles", group = "Alerts",
      tooltip = "Rectangles only alert while their time window is still active — once the chart has passed a box's end time it is ignored.")
 alertLines  = input.bool(false, title = "Alert on lines", group = "Alerts")
+alertCooldown = input.int(15, title = "Cooldown per zone (minutes)", minval = 0, group = "Alerts",
+     tooltip = "After a zone alerts, it won't alert again for this many minutes — avoids repeat pings while price hovers at an edge. 0 = no cooldown.")
 
 // ── Chart family (mirror of the backend's _group, micro → mini) ──
 familyOf(string root) =>
@@ -167,6 +169,7 @@ var float[]  aBot  = array.new<float>()
 var string[] aName = array.new<string>()
 var bool[]   aIn   = array.new<bool>()    // was price inside this object on the prior bar
 var float[]  aEnd  = array.new<float>()   // end epoch (sec); 0 = no end / timeless (zones)
+var float[]  aLast = array.new<float>()   // timenow (ms) of this object's last alert; 0 = never
 var bool     aParsed = false
 
 // Parse the alert targets once (re-runs automatically if the input or symbol changes).
@@ -188,6 +191,7 @@ if not aParsed and str.length(levelsStr) > 0
                     array.push(aName, array.get(f, 6))
                     array.push(aIn, false)
                     array.push(aEnd, na(eSec) ? 0.0 : eSec)
+                    array.push(aLast, 0.0)
 
 // On every bar, check entry transitions. alert() only actually fires on
 // real-time bars, so history just primes the inside/outside state.
@@ -200,8 +204,12 @@ if array.size(aTop) > 0
         // (Zones have endSec 0 → always active; rectangles ignored once expired.)
         endSec = array.get(aEnd, i)
         active = endSec == 0 or endSec * 1000 >= timenow
-        if touching and not array.get(aIn, i) and active
+        // Cooldown gate: skip if this zone alerted within the cooldown window.
+        lastT = array.get(aLast, i)
+        cool = alertCooldown <= 0 or lastT == 0 or (timenow - lastT) >= alertCooldown * 60000
+        if touching and not array.get(aIn, i) and active and cool
             nm = array.get(aName, i)
             rng = str.tostring(bot, format.mintick) + "–" + str.tostring(top, format.mintick)
             alert("ATAS level hit: " + (str.length(nm) > 0 ? nm + " (" + rng + ")" : rng) + " on " + syminfo.ticker, alert.freq_once_per_bar)
+            array.set(aLast, i, timenow)
         array.set(aIn, i, touching)
