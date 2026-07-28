@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ATAS Levels → TradingView
 // @namespace    atas-on-steroids
-// @version      3.12
+// @version      3.15
 // @description  Auto-syncs ATAS-drawn levels onto TradingView. The Pine indicator is symbol-aware (one config holds both ES and NQ and self-selects), so this only fills it when you save the workspace in ATAS — no action on ticker switches.
 // @match        https://www.tradingview.com/chart/*
 // @match        https://*.tradingview.com/chart/*
@@ -14,7 +14,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '3.12';
+  const VERSION = '3.15';
   const BACKEND = 'http://localhost:3001';
   const POLL_MS = 15000;   // levels change only on workspace save; 15s is plenty
 
@@ -238,6 +238,90 @@
     }
   }
 
+  // Recreate the indicator's alert so its frozen input snapshot picks up the
+  // current zones. Deletes existing "ATAS Levels" alerts, then creates a fresh
+  // one via the legend's More menu → "Add alert on ATAS Levels" → Create.
+  // Notifications default to the last-used config (set your sound once manually).
+  async function refreshAlert(trace) {
+    const t = trace || [];
+
+    // 1. Best-effort delete of existing ATAS Levels alerts (avoid duplicates).
+    await deleteAtasAlerts(t);
+
+    // 2. Locate the legend row's "More" (⋯) button.
+    const titles = findLegendTitles(t);
+    if (!titles.length) return { ok: false, why: '"ATAS Levels" not on chart', trace: t };
+    const isMore = (b) => /^(more|more actions|⋯|\.\.\.)$/i.test((b.getAttribute('aria-label') || b.title || '').trim())
+                       || /more/i.test(b.getAttribute('data-name') || '');
+    let row = titles[0], more = null;
+    for (let i = 0; i < 12 && row.parentElement && !more; i++) {
+      row = row.parentElement;
+      hover(row);
+      more = [...row.querySelectorAll('button, [role="button"]')].find(isMore) || null;
+    }
+    t.push('more button: ' + (more ? 'found' : 'NONE'));
+    if (!more) {
+      const labels = [...row.querySelectorAll('button,[role="button"]')].map((b) => b.getAttribute('aria-label') || b.title || '·');
+      t.push('row buttons: ' + labels.slice(0, 16).join(', '));
+      return { ok: false, why: 'legend More button not found', trace: t };
+    }
+
+    // 3. Open the menu and click "Add alert…".
+    hover(more); realClick(more);
+    const menu = await waitFor(() => document.querySelector('[role="menu"], [data-name="menu-inner"], [class*="menuBox" i]'), 1500);
+    t.push('menu: ' + (menu ? 'open' : 'no'));
+    if (!menu) return { ok: false, why: 'legend menu did not open', trace: t };
+    const items = [...menu.querySelectorAll('[role="menuitem"], [class*="item" i], [data-role="menuitem"]')];
+    t.push('menu items: ' + items.map((x) => x.textContent.trim()).filter(Boolean).slice(0, 20).join(' | '));
+    const addAlert = items.find((x) => /add alert/i.test(x.textContent));
+    if (!addAlert) return { ok: false, why: 'no "Add alert" menu item', trace: t };
+    realClick(addAlert);
+
+    // 4. Create-alert dialog opens with the condition pre-filled → click Create.
+    const dlg = await waitFor(() => [...document.querySelectorAll('[role="dialog"]')].find((d) => /create alert|condition/i.test(d.textContent)), 2500);
+    t.push('create dialog: ' + (dlg ? 'open' : 'no'));
+    if (!dlg) return { ok: false, why: 'create-alert dialog did not open', trace: t };
+    const btns = [...dlg.querySelectorAll('button')];
+    t.push('dialog buttons: ' + btns.map((b) => b.textContent.trim()).filter(Boolean).slice(0, 12).join(', '));
+    const createBtn = dlg.querySelector('[data-name="submit-button"], [data-name="alerts-create-edit-button"]')
+                   || btns.find((b) => /^(create|save)$/i.test(b.textContent.trim()));
+    if (!createBtn) return { ok: false, why: 'Create button not found', trace: t };
+    realClick(createBtn);
+    await sleep(400);
+    return { ok: true, trace: t };
+  }
+
+  // Delete existing "ATAS Levels" alerts (right-sidebar Alerts panel only, so we
+  // never touch the chart legend / indicator-remove button). In diagnostic mode
+  // it dumps the alert-row structure instead of clicking, to find the delete control.
+  async function deleteAtasAlerts(t) {
+    try {
+      const W = window.innerWidth;
+      // Leaf title elements that read "ATAS Levels" and sit on the right sidebar.
+      const titles = [...document.querySelectorAll('div, span')].filter((e) => {
+        if (e.childElementCount !== 0) return false;
+        if (!/^ATAS Levels/.test((e.textContent || '').trim())) return false;
+        const r = e.getBoundingClientRect();
+        return r.width > 0 && r.left > W * 0.6;   // right sidebar = alerts panel
+      });
+      if (t) t.push('ATAS alert rows (right side): ' + titles.length);
+      if (!titles.length) return 0;
+
+      let deleted = 0;
+      for (const title of titles) {
+        let r = title;
+        for (let i = 0; i < 6 && r.parentElement; i++) r = r.parentElement;
+        hover(r);
+        for (const el of r.querySelectorAll('*')) hover(el);
+        await sleep(150);
+        const del = r.querySelector('[data-name*="delete" i], button[aria-label*="delete" i]');
+        if (del) { realClick(del); deleted++; await sleep(250); }
+      }
+      if (t) t.push('deleted: ' + deleted);
+      return deleted;
+    } catch (e) { if (t) t.push('delete step error: ' + e.message); return 0; }
+  }
+
   async function autoTick() {
     if (!isAuto() || applying) return;
     if (!combined || combined === lastApplied) return;     // nothing new
@@ -280,14 +364,28 @@
         </label>
       </div>
       <div style="color:#9a9aa2;margin-bottom:6px;">${countStr} <span style="color:${synced ? '#3ec27a' : '#c9a23e'}">${synced ? '✓ synced' : '… pending'}</span></div>
-      <div style="display:flex;gap:6px;">
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
         <button id="atas-copy" style="${BTN}">Copy all</button>
         <button id="atas-push" style="${BTN};background:#3a3a44;">Push now</button>
+        <button id="atas-alert" style="${BTN};background:#7a4dd0;">Refresh alert</button>
       </div>
       <div id="atas-status" style="color:#6f6f78;font-size:10px;margin-top:6px;min-height:12px;"></div>`;
 
     host.querySelector('#atas-auto').onchange = (e) => { setAuto(e.target.checked); render(); };
     host.querySelector('#atas-copy').onclick = () => { GM_setClipboard(combined); flash('copied — paste into the indicator'); };
+    host.querySelector('#atas-alert').onclick = async () => {
+      const trace = [];
+      let res;
+      try { res = await refreshAlert(trace); }
+      catch (e) { res = { ok: false, why: 'exception: ' + (e && e.message), trace }; }
+      if (res.ok) flash('✓ alert refreshed');
+      else {
+        flash('alert refresh failed');
+        alert('ATAS Levels v' + VERSION + ' — Refresh alert trace:\n\n' + (res.trace || trace).join('\n') +
+              '\n\nRESULT: ' + (res.ok ? 'OK' : 'FAILED — ' + res.why));
+      }
+      render();
+    };
     host.querySelector('#atas-push').onclick = async () => {
       const trace = [];
       let res;

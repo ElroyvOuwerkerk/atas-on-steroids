@@ -144,6 +144,14 @@ rectangle alerts without getting pinged on stale, historical boxes.
 window (default 15 min; `0` disables) — avoids repeat pings while price hovers
 at a zone edge.
 
+**Refresh alert button** (widget): one click recreates the alert against your
+current zones — it best-effort deletes existing "ATAS Levels" alerts, then
+creates a fresh one via the legend's ⋯ menu → *Add alert* → Create (the new
+alert inherits your last-used notification settings, so configure the sound
+once manually). Click it after you finalize your analysis; then close ATAS.
+The delete step is best-effort against TradingView's alerts panel — if a stale
+duplicate lingers, remove it manually.
+
 **Important — the snapshot rule:** a TradingView alert **freezes** the
 indicator's input the moment you create it, and never updates it afterward
 ([TradingView docs](https://www.tradingview.com/support/solutions/43000597494-alerts-on-alert-function/)).
