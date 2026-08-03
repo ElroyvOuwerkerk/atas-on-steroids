@@ -10,6 +10,9 @@ Format: reverse-chronological. Newest entries at the top.
 
 Work currently in progress on the working tree (not yet committed).
 
+### Fixed — Pine: boxes drawn on future candles
+- `tradingview-sync/atas-levels.pine` — rectangles that extend past the last candle now render into the future. `xloc.bar_time` clamps any future timestamp to the last historical bar (TradingView limitation), so a box drawn on future candles in ATAS collapsed back to the latest bar. When a box's end is beyond the last bar, it's now projected onto `xloc.bar_index` (bars ahead computed from `timeframe.in_seconds()`, clamped to TV's 500-bar future limit); historical boxes still use `bar_time` for accuracy. Far-future/across-weekend projection is approximate (calendar-time based).
+
 ### Changed — Pine labels
 - `tradingview-sync/atas-levels.pine` — labels (price-value chips) now render **only for horizontal lines**. Zones (HighlightY) and rectangles are drawn without labels for a cleaner chart.
 

@@ -137,11 +137,24 @@ if barstate.islast
                         else
                             l = int(startSec) * 1000
                             rgt = hasEnd ? int(endSec) * 1000 : time
-                            bx = box.new(l, top, rgt, bot, xloc = xloc.bar_time,
-                                 border_color = col, border_width = 1,
-                                 extend = hasEnd ? extend.none : extend.right,
-                                 bgcolor = fillCol)
-                            array.push(bxs, bx)
+                            if hasEnd and rgt > time
+                                // Box extends into the future. xloc.bar_time clamps
+                                // future times to the last bar, so project onto
+                                // bar_index (up to TV's 500-bar future limit).
+                                tfMs = timeframe.in_seconds() * 1000
+                                lBars = tfMs > 0 ? int((l - time) / tfMs) : 0
+                                rBars = tfMs > 0 ? int((rgt - time) / tfMs) : 1
+                                leftIdx = math.max(0, bar_index + lBars)
+                                rightIdx = math.max(leftIdx + 1, math.min(bar_index + 500, bar_index + rBars))
+                                bx = box.new(leftIdx, top, rightIdx, bot, xloc = xloc.bar_index,
+                                     border_color = col, border_width = 1, bgcolor = fillCol)
+                                array.push(bxs, bx)
+                            else
+                                bx = box.new(l, top, rgt, bot, xloc = xloc.bar_time,
+                                     border_color = col, border_width = 1,
+                                     extend = hasEnd ? extend.none : extend.right,
+                                     bgcolor = fillCol)
+                                array.push(bxs, bx)
 
                     // Labels are only shown for horizontal lines (price + name) —
                     // never for zones or rectangles.
