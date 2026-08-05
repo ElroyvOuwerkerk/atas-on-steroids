@@ -16,6 +16,9 @@ Work currently in progress on the working tree (not yet committed).
 ### Changed — Pine labels
 - `tradingview-sync/atas-levels.pine` — labels (price-value chips) now render **only for horizontal lines**. Zones (HighlightY) and rectangles are drawn without labels for a cleaner chart.
 
+### Fixed — Level Sync userscript vs a TradingView UI update (v3.16–3.18)
+- `tradingview-sync/atas-levels.user.js` — a TradingView update broke the auto-apply: the settings dialog lost its `role="dialog"` attribute and now reopens on the last-used tab (often Style), which has no Levels textarea. Fixes: detect the settings dialog by its visible **Inputs/Style/Visibility** tabs (not `role="dialog"`); **click the Inputs tab** before reading the textarea; detect the textarea by visibility (not surrounding label text); find the OK button among visible `Ok`/`Apply` buttons. Added a **2-minute failure backoff** in `autoTick` so a broken apply can't reopen the dialog every 15s (the repeated-popup symptom). Manual **Copy all → paste** remains the fallback.
+
 ### Added — Level Sync userscript: Refresh alert button (v3.15)
 - `tradingview-sync/atas-levels.user.js` — new **Refresh alert** button in the widget. Because TradingView freezes an indicator alert's input at creation, the button recreates the alert against the current zones: best-effort deletes existing "ATAS Levels" alerts (scoped to the right-sidebar alerts panel so it never touches the chart legend/indicator-remove), then creates a fresh one via the legend ⋯ menu → *Add alert* → Create (inherits last-used notification settings). Semi-auto by design — the create is reliable; the delete is best-effort (stale duplicates may need a manual remove). Uses the same `realClick` pointer-sequence + `waitFor` helpers as the settings automation.
 

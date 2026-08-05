@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ATAS Levels → TradingView
 // @namespace    atas-on-steroids
-// @version      3.15
+// @version      3.18
 // @description  Auto-syncs ATAS-drawn levels onto TradingView. The Pine indicator is symbol-aware (one config holds both ES and NQ and self-selects), so this only fills it when you save the workspace in ATAS — no action on ticker switches.
 // @match        https://www.tradingview.com/chart/*
 // @match        https://*.tradingview.com/chart/*
@@ -14,7 +14,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '3.15';
+  const VERSION = '3.18';
   const BACKEND = 'http://localhost:3001';
   const POLL_MS = 15000;   // levels change only on workspace save; 15s is plenty
 
@@ -93,14 +93,29 @@
   // Find the textarea that belongs to OUR indicator's settings dialog — the one
   // whose surrounding panel mentions "ATAS Levels" / the Levels input label.
   // (Avoids latching onto a stray dialog, e.g. the timeframe settings.)
+  function ctxAround(ta) {
+    const dlg = ta.closest('[role="dialog"]') || ta.closest('[data-name*="dialog" i]');
+    if (dlg) return dlg.textContent || '';
+    let p = ta;
+    for (let i = 0; i < 10 && p; i++) p = p.parentElement;
+    return (p || document).textContent || '';
+  }
+  function isVisible(el) {
+    const r = el.getBoundingClientRect();
+    return r.width > 0 && r.height > 0;
+  }
   function findInput() {
-    for (const ta of document.querySelectorAll('textarea')) {
-      const dlg = ta.closest('[role="dialog"]') || ta.closest('[data-name*="dialog" i]');
-      let ctx = dlg ? dlg.textContent || '' : '';
-      if (!dlg) { let p = ta; for (let i = 0; i < 10 && p; i++) p = p.parentElement; ctx = (p || document).textContent || ''; }
-      if (ctx.includes('ATAS Levels') || ctx.includes('Levels (paste')) return ta;
+    const tas = [...document.querySelectorAll('textarea')].filter(isVisible);
+    if (!tas.length) return null;
+    // Prefer the textarea whose panel clearly belongs to our indicator.
+    for (const ta of tas) {
+      if (/ATAS Levels|Levels \(paste|Copy all/i.test(ctxAround(ta))) return ta;
     }
-    return null;
+    // Fallback: any visible textarea that is NOT the timeframe/interval dialog.
+    for (const ta of tas) {
+      if (!/add custom interval|interval settings|\b30s\b|\b1m\b\s*\b5m\b/i.test(ctxAround(ta))) return ta;
+    }
+    return tas[0];
   }
   const anyDialogOpen = () => !!document.querySelector('[role="dialog"], [data-dialog-name]');
   const userIsTyping = () => {
@@ -163,21 +178,34 @@
       t.push('row buttons: ' + (labels.slice(0, 16).join(', ') || '(none)'));
     }
 
+    // Detect the indicator settings dialog by its visible tabs — NOT [role=dialog]
+    // (TradingView dropped that). Only the indicator settings has a "Visibility" tab.
+    const visLeaf = (txt) => [...document.querySelectorAll('button, [role="tab"], span, div')]
+      .find((e) => e.childElementCount === 0 && new RegExp('^' + txt + '$', 'i').test((e.textContent || '').trim()) && isVisible(e)) || null;
+    const settingsOpen = () => (visLeaf('Visibility') && visLeaf('Inputs')) ? true : null;
+
     const tryOpen = async (label, fn) => {
       try { await fn(); } catch (e) { t.push(`${label} threw: ${e.message}`); return null; }
-      const ta = await waitFor(findInput, 1400);
-      t.push(`${label}: ${ta ? 'OPENED' : 'no'}`);
-      return ta;
+      const ok = await waitFor(settingsOpen, 1500);
+      t.push(`${label}: dialog=${ok ? 'yes' : 'no'}`);
+      return ok;
     };
 
-    let ta = null;
-    if (gear) {
-      ta = ta || await tryOpen('gear realClick', () => { hover(gear); realClick(gear); });
-      const inner = gear.querySelector('svg, span, div');
-      if (!ta && inner) ta = await tryOpen('gear inner realClick', () => realClick(inner));
+    let opened = null;
+    if (gear) opened = await tryOpen('gear', () => { hover(gear); realClick(gear); });
+    if (!opened) opened = await tryOpen('title dbl', () => { realClick(titleEl); realClick(titleEl); });
+    if (!opened) { t.push('settings dialog never opened'); return null; }
+
+    // TradingView remembers the last tab, which may not be Inputs — the Levels
+    // textarea only exists on the Inputs tab, so switch to it first.
+    let ta = findInput();
+    if (!ta) {
+      const inputsTab = visLeaf('Inputs');
+      t.push('Inputs tab: ' + (inputsTab ? 'found' : 'NOT found'));
+      if (inputsTab) { realClick(inputsTab); await sleep(200); }
+      ta = await waitFor(findInput, 1500);
     }
-    if (!ta) ta = await tryOpen('title dbl-realClick', () => { realClick(titleEl); realClick(titleEl); });
-    if (!ta) ta = await tryOpen('row dbl-realClick', () => { realClick(row); realClick(row); });
+    t.push('textarea: ' + (ta ? 'yes' : 'no'));
     return ta;
   }
 
@@ -193,12 +221,12 @@
     fillTextarea(textarea, csv, t);
     await sleep(150);
 
-    // OK button: scope to the panel containing the textarea, else whole document.
-    const panel = textarea.closest('[role="dialog"]') || textarea.closest('[data-name*="dialog" i]') || document;
-    const buttons = [...panel.querySelectorAll('button')];
-    const ok = panel.querySelector('[data-name="submit-button"]')
-          || buttons.find((b) => /^(ok|apply)$/i.test(b.textContent.trim()));
-    t.push(`buttons: [${buttons.map((b) => b.textContent.trim()).filter(Boolean).slice(0, 12).join(', ')}]`);
+    // OK button: prefer the submit control; else a VISIBLE "Ok"/"Apply" button
+    // (no longer scoped to [role=dialog], which TradingView dropped).
+    const visBtns = [...document.querySelectorAll('button, [role="button"]')].filter(isVisible);
+    const ok = document.querySelector('[data-name="submit-button"]')
+          || visBtns.find((b) => /^(ok|apply)$/i.test((b.textContent || '').trim()));
+    t.push(`visible buttons: [${visBtns.map((b) => (b.textContent || '').trim()).filter(Boolean).slice(0, 14).join(', ')}]`);
     t.push(`OK button: ${ok ? 'yes' : 'no'}`);
     if (!ok) return { ok: false, why: 'OK button not found', trace: t };
     realClick(ok);
@@ -322,15 +350,23 @@
     } catch (e) { if (t) t.push('delete step error: ' + e.message); return 0; }
   }
 
+  let autoFailUntil = 0;   // backoff: don't auto-retry until this time (ms epoch)
   async function autoTick() {
     if (!isAuto() || applying) return;
     if (!combined || combined === lastApplied) return;     // nothing new
+    if (Date.now() < autoFailUntil) return;                // backing off after a failure
     if (anyDialogOpen() || userIsTyping()) return;          // be polite; retry next tick
     applying = true;
     try {
       const res = await applyToChart(combined);
-      if (res.ok) { lastApplied = combined; flash(`✓ levels applied`); }
-      else flash(`auto-apply failed: ${res.why}`);
+      if (res.ok) {
+        lastApplied = combined; autoFailUntil = 0;
+        flash('✓ levels applied');
+      } else {
+        // Back off 2 min so a broken apply can't reopen the dialog every poll.
+        autoFailUntil = Date.now() + 120000;
+        flash(`auto-apply failed (backing off): ${res.why}`);
+      }
     } finally { applying = false; render(); }
   }
 
