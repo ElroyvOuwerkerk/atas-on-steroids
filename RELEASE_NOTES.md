@@ -16,6 +16,9 @@ Work currently in progress on the working tree (not yet committed).
 ### Changed — Pine labels
 - `tradingview-sync/atas-levels.pine` — labels (price-value chips) now render **only for horizontal lines**. Zones (HighlightY) and rectangles are drawn without labels for a cleaner chart.
 
+### Fixed — Level Sync userscript: multi-chart layouts (v3.19)
+- `tradingview-sync/atas-levels.user.js` — in a layout with more than one chart, only the first chart's "ATAS Levels" indicator was filled (the apply used `titles[0]`). Now it dedupes the found legend titles to one per pane (by on-screen position) and fills **every** pane's indicator in sequence, then saves the layout once. Each pane self-selects its family, so ES/MES and NQ/MNQ charts in the same layout all update.
+
 ### Fixed — Level Sync userscript vs a TradingView UI update (v3.16–3.18)
 - `tradingview-sync/atas-levels.user.js` — a TradingView update broke the auto-apply: the settings dialog lost its `role="dialog"` attribute and now reopens on the last-used tab (often Style), which has no Levels textarea. Fixes: detect the settings dialog by its visible **Inputs/Style/Visibility** tabs (not `role="dialog"`); **click the Inputs tab** before reading the textarea; detect the textarea by visibility (not surrounding label text); find the OK button among visible `Ok`/`Apply` buttons. Added a **2-minute failure backoff** in `autoTick` so a broken apply can't reopen the dialog every 15s (the repeated-popup symptom). Manual **Copy all → paste** remains the fallback.
 

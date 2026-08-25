@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ATAS Levels → TradingView
 // @namespace    atas-on-steroids
-// @version      3.18
+// @version      3.19
 // @description  Auto-syncs ATAS-drawn levels onto TradingView. The Pine indicator is symbol-aware (one config holds both ES and NQ and self-selects), so this only fills it when you save the workspace in ATAS — no action on ticker switches.
 // @match        https://www.tradingview.com/chart/*
 // @match        https://*.tradingview.com/chart/*
@@ -14,7 +14,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '3.18';
+  const VERSION = '3.19';
   const BACKEND = 'http://localhost:3001';
   const POLL_MS = 15000;   // levels change only on workspace save; 15s is plenty
 
@@ -211,26 +211,37 @@
 
   async function applyToChart(csv, trace) {
     const t = trace || [];
-    const titles = findLegendTitles(t);
-    t.push(`title matches: ${titles.length}`);
-    if (!titles.length) return { ok: false, why: '"ATAS Levels" title not found on page', trace: t };
+    const all = findLegendTitles(t);
+    if (!all.length) return { ok: false, why: '"ATAS Levels" title not found on page', trace: t };
 
-    const textarea = await openSettings(titles[0], t);
-    if (!textarea) return { ok: false, why: 'settings panel would not open (see methods above)', trace: t };
+    // A layout can hold several charts, each with its own ATAS Levels indicator.
+    // Dedupe to one title per pane (by on-screen position) and fill them all.
+    const seen = new Set();
+    const titles = [];
+    for (const el of all) {
+      const r = el.getBoundingClientRect();
+      const key = Math.round(r.left / 60) + ':' + Math.round(r.top / 60);
+      if (seen.has(key)) continue;
+      seen.add(key); titles.push(el);
+    }
+    t.push(`ATAS Levels panes: ${titles.length}`);
 
-    fillTextarea(textarea, csv, t);
-    await sleep(150);
-
-    // OK button: prefer the submit control; else a VISIBLE "Ok"/"Apply" button
-    // (no longer scoped to [role=dialog], which TradingView dropped).
-    const visBtns = [...document.querySelectorAll('button, [role="button"]')].filter(isVisible);
-    const ok = document.querySelector('[data-name="submit-button"]')
-          || visBtns.find((b) => /^(ok|apply)$/i.test((b.textContent || '').trim()));
-    t.push(`visible buttons: [${visBtns.map((b) => (b.textContent || '').trim()).filter(Boolean).slice(0, 14).join(', ')}]`);
-    t.push(`OK button: ${ok ? 'yes' : 'no'}`);
-    if (!ok) return { ok: false, why: 'OK button not found', trace: t };
-    realClick(ok);
-    await sleep(400);
+    let applied = 0;
+    for (const title of titles) {
+      const textarea = await openSettings(title, t);
+      if (!textarea) { t.push('pane: settings would not open'); continue; }
+      fillTextarea(textarea, csv, t);
+      await sleep(150);
+      const visBtns = [...document.querySelectorAll('button, [role="button"]')].filter(isVisible);
+      const ok = document.querySelector('[data-name="submit-button"]')
+            || visBtns.find((b) => /^(ok|apply)$/i.test((b.textContent || '').trim()));
+      if (!ok) { t.push('pane: OK not found'); continue; }
+      realClick(ok);
+      await sleep(400);   // let the dialog close before the next pane
+      applied++;
+    }
+    t.push(`panes applied: ${applied}/${titles.length}`);
+    if (!applied) return { ok: false, why: 'no ATAS Levels indicator could be filled', trace: t };
     saveLayout(t);   // persist into the chart layout so it survives reloads / shows everywhere
     return { ok: true, trace: t };
   }
