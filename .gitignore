@@ -1,0 +1,6 @@
+# Python bytecode (trading-journal backend)
+__pycache__/
+*.pyc
+
+# Claude Code worktree isolation (harness-managed, transient)
+.claude/worktrees/

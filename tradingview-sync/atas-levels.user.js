@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ATAS Levels → TradingView
 // @namespace    atas-on-steroids
-// @version      3.19
+// @version      3.22
 // @description  Auto-syncs ATAS-drawn levels onto TradingView. The Pine indicator is symbol-aware (one config holds both ES and NQ and self-selects), so this only fills it when you save the workspace in ATAS — no action on ticker switches.
 // @match        https://www.tradingview.com/chart/*
 // @match        https://*.tradingview.com/chart/*
@@ -14,7 +14,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '3.19';
+  const VERSION = '3.22';
   const BACKEND = 'http://localhost:3001';
   const POLL_MS = 15000;   // levels change only on workspace save; 15s is plenty
 
@@ -73,6 +73,20 @@
     el.dispatchEvent(new MouseEvent('mouseup', o));
     el.dispatchEvent(new MouseEvent('click', o));
   }
+  // Double-click the exact element (with coordinates + a real dblclick event) —
+  // TradingView opens an indicator's settings when its legend title is dbl-clicked.
+  function doubleClick(el) {
+    const b = el.getBoundingClientRect();
+    const o = { bubbles: true, cancelable: true, clientX: b.left + b.width / 2, clientY: b.top + b.height / 2 };
+    for (let n = 1; n <= 2; n++) {
+      try { el.dispatchEvent(new PointerEvent('pointerdown', o)); } catch (e) {}
+      el.dispatchEvent(new MouseEvent('mousedown', o));
+      try { el.dispatchEvent(new PointerEvent('pointerup', o)); } catch (e) {}
+      el.dispatchEvent(new MouseEvent('mouseup', o));
+      el.dispatchEvent(new MouseEvent('click', { ...o, detail: n }));
+    }
+    el.dispatchEvent(new MouseEvent('dblclick', { ...o, detail: 2 }));
+  }
   // Fill a textarea the way a real paste does. TradingView's editor ignores a
   // programmatically-set .value, so use the browser's native insertText (fires
   // a trusted input event the editor accepts); fall back to the React setter.
@@ -104,6 +118,13 @@
     const r = el.getBoundingClientRect();
     return r.width > 0 && r.height > 0;
   }
+  // A visible leaf element whose exact text is `txt` (used to spot dialog tabs).
+  function visLeaf(txt) {
+    return [...document.querySelectorAll('button, [role="tab"], span, div')]
+      .find((e) => e.childElementCount === 0 && new RegExp('^' + txt + '$', 'i').test((e.textContent || '').trim()) && isVisible(e)) || null;
+  }
+  // The indicator settings dialog is the only thing with Inputs + Visibility tabs.
+  const settingsDialogOpen = () => !!(visLeaf('Visibility') && visLeaf('Inputs'));
   function findInput() {
     const tas = [...document.querySelectorAll('textarea')].filter(isVisible);
     if (!tas.length) return null;
@@ -159,51 +180,56 @@
     // (NOT "Show interval settings", which is the chart timeframe control).
     const isGear = (b) => /^settings$/i.test((b.getAttribute('aria-label') || b.title || '').trim());
 
-    // Climb to the SMALLEST ancestor that contains this row's own gear — that
-    // scopes us to the ATAS Levels legend item, not the whole legend.
+    // Reveal hover actions on THIS title's legend row and its ancestors.
     let row = titleEl;
-    let gear = null;
-    for (let i = 0; i < 12 && row.parentElement && !gear; i++) {
-      row = row.parentElement;
-      gear = [...row.querySelectorAll('button, [role="button"]')].find(isGear) || null;
-    }
-    hover(row);
-    if (gear) hover(gear);
-    await sleep(200);
-    t.push('gear (exact "Settings"): ' + (gear ? 'found' : 'NONE'));
-    if (!gear) {
-      // diagnostic if the exact match failed
-      const labels = [...row.querySelectorAll('button,[role="button"]')]
-        .map((b) => b.getAttribute('aria-label') || b.title || '·');
-      t.push('row buttons: ' + (labels.slice(0, 16).join(', ') || '(none)'));
-    }
+    const toHover = [titleEl];
+    for (let i = 0; i < 8 && row.parentElement; i++) { row = row.parentElement; toHover.push(row); }
+    toHover.forEach(hover);
+    await sleep(220);
 
-    // Detect the indicator settings dialog by its visible tabs — NOT [role=dialog]
-    // (TradingView dropped that). Only the indicator settings has a "Visibility" tab.
-    const visLeaf = (txt) => [...document.querySelectorAll('button, [role="tab"], span, div')]
-      .find((e) => e.childElementCount === 0 && new RegExp('^' + txt + '$', 'i').test((e.textContent || '').trim()) && isVisible(e)) || null;
-    const settingsOpen = () => (visLeaf('Visibility') && visLeaf('Inputs')) ? true : null;
+    // Gear on the SAME ROW as this title (a legend can list many indicators, each
+    // with its own gear stacked vertically — match the row, then nearest by x).
+    const tr = titleEl.getBoundingClientRect();
+    const tMid = tr.top + tr.height / 2;
+    let gear = null, best = Infinity;
+    for (const g of document.querySelectorAll('button, [role="button"]')) {
+      if (!isGear(g) || !isVisible(g)) continue;
+      const r = g.getBoundingClientRect();
+      if (Math.abs((r.top + r.height / 2) - tMid) > 14) continue;   // same row only
+      const d = Math.abs(r.left - tr.left);
+      if (d < best) { best = d; gear = g; }
+    }
+    if (gear) hover(gear);
+    t.push('same-row gear: ' + (gear ? `@${Math.round(best)}px` : 'NONE'));
 
     const tryOpen = async (label, fn) => {
-      try { await fn(); } catch (e) { t.push(`${label} threw: ${e.message}`); return null; }
-      const ok = await waitFor(settingsOpen, 1500);
+      try { await fn(); } catch (e) { t.push(`${label} threw: ${e.message}`); return false; }
+      const ok = await waitFor(() => (settingsDialogOpen() ? true : null), 1500);
       t.push(`${label}: dialog=${ok ? 'yes' : 'no'}`);
-      return ok;
+      return !!ok;
     };
 
-    let opened = null;
-    if (gear) opened = await tryOpen('gear', () => { hover(gear); realClick(gear); });
-    if (!opened) opened = await tryOpen('title dbl', () => { realClick(titleEl); realClick(titleEl); });
+    // Primary: double-click the exact title (unambiguous — opens THIS indicator).
+    // Fallback: the same-row gear.
+    let opened = await tryOpen('title dblclick', () => doubleClick(titleEl));
+    if (!opened && gear) opened = await tryOpen('gear', () => { hover(gear); realClick(gear); });
     if (!opened) { t.push('settings dialog never opened'); return null; }
 
-    // TradingView remembers the last tab, which may not be Inputs — the Levels
-    // textarea only exists on the Inputs tab, so switch to it first.
+    // Switch to the Inputs tab, then grab the Levels textarea.
     let ta = findInput();
     if (!ta) {
       const inputsTab = visLeaf('Inputs');
       t.push('Inputs tab: ' + (inputsTab ? 'found' : 'NOT found'));
       if (inputsTab) { realClick(inputsTab); await sleep(200); }
       ta = await waitFor(findInput, 1500);
+    }
+    // Confirm we opened OUR indicator (its panel mentions ATAS Levels / the Levels
+    // label) — not some other indicator's dialog.
+    if (ta && !/ATAS Levels|Levels \(paste|Copy all/i.test(ctxAround(ta))) {
+      t.push('opened wrong indicator (no ATAS Levels context) — skipping');
+      const cancel = [...document.querySelectorAll('button')].filter(isVisible).find((b) => /^cancel$/i.test((b.textContent || '').trim()));
+      if (cancel) realClick(cancel);
+      return null;
     }
     t.push('textarea: ' + (ta ? 'yes' : 'no'));
     return ta;
@@ -228,17 +254,22 @@
 
     let applied = 0;
     for (const title of titles) {
+      // Never start a pane while a dialog is still open — that's what makes the
+      // detector grab the wrong (stale) textarea in multi-chart layouts.
+      if (settingsDialogOpen()) await waitFor(() => (!settingsDialogOpen() ? true : null), 3000);
       const textarea = await openSettings(title, t);
       if (!textarea) { t.push('pane: settings would not open'); continue; }
       fillTextarea(textarea, csv, t);
-      await sleep(150);
+      await sleep(200);
       const visBtns = [...document.querySelectorAll('button, [role="button"]')].filter(isVisible);
       const ok = document.querySelector('[data-name="submit-button"]')
             || visBtns.find((b) => /^(ok|apply)$/i.test((b.textContent || '').trim()));
       if (!ok) { t.push('pane: OK not found'); continue; }
       realClick(ok);
-      await sleep(400);   // let the dialog close before the next pane
       applied++;
+      // Wait for THIS dialog to fully close before touching the next pane.
+      await waitFor(() => (!settingsDialogOpen() ? true : null), 3000);
+      await sleep(250);
     }
     t.push(`panes applied: ${applied}/${titles.length}`);
     if (!applied) return { ok: false, why: 'no ATAS Levels indicator could be filled', trace: t };
@@ -445,7 +476,6 @@
         lastApplied = combined;
         flash('✓ pushed & saved');
       } else {
-        // Only surface the full diagnostic when something actually fails.
         flash(`push failed: ${res.why}`);
         alert('ATAS Levels v' + VERSION + ' — Push failed\n\n' + (res.trace || trace).join('\n') +
               '\n\nRESULT: ' + res.why);

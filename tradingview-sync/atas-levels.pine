@@ -30,6 +30,8 @@ labelOffset = input.int(3,       title = "Label offset (bars right of last candl
 lineWidth   = input.int(1,       title = "Line width", minval = 1, maxval = 5)
 lineStyleS  = input.string("Solid", title = "Line style", options = ["Solid", "Dashed", "Dotted"])
 showBoxes   = input.bool(true,   title = "Show rectangles / zones")
+fillTransp  = input.int(92,      title = "Zone/box fill transparency (%)", minval = 50, maxval = 100,
+     tooltip = "Higher = more see-through. Overrides the ATAS fill opacity so you can see candles inside a zone.")
 
 alertZones  = input.bool(true,  title = "Alert on highlights (zones)", group = "Alerts",
      tooltip = "Fires a TradingView alert when price enters a zone. Create one alert on this indicator with condition 'Any alert() function call'.")
@@ -128,7 +130,9 @@ if barstate.islast
                         top = math.max(price, price2)
                         bot = math.min(price, price2)
                         labelPrice := (top + bot) / 2
-                        fillCol = str.length(fillHx) >= 6 ? hexFill(fillHx) : color.new(col, 90)
+                        // Fill uses the user's transparency (overrides ATAS opacity so
+                        // candles inside a zone stay visible); border keeps its colour.
+                        fillCol = color.new(col, fillTransp)
                         if kind == "Z" or not hasStart
                             bx = box.new(bar_index, top, bar_index + 1, bot,
                                  border_color = col, border_width = 1, extend = extend.both,
@@ -137,19 +141,22 @@ if barstate.islast
                         else
                             l = int(startSec) * 1000
                             rgt = hasEnd ? int(endSec) * 1000 : time
-                            if hasEnd and rgt > time
-                                // Box extends into the future. xloc.bar_time clamps
-                                // future times to the last bar, so project onto
-                                // bar_index (up to TV's 500-bar future limit).
+                            if hasEnd and l > time
+                                // Box is ENTIRELY in the future — bar_time clamps future
+                                // times to the last bar, so project onto bar_index.
                                 tfMs = timeframe.in_seconds() * 1000
-                                lBars = tfMs > 0 ? int((l - time) / tfMs) : 0
-                                rBars = tfMs > 0 ? int((rgt - time) / tfMs) : 1
-                                leftIdx = math.max(0, bar_index + lBars)
+                                lBars = tfMs > 0 ? int((l - time) / tfMs) : 1
+                                rBars = tfMs > 0 ? int((rgt - time) / tfMs) : 2
+                                // Cap the LEFT edge at +499 so right (left+1) can't exceed
+                                // TradingView's +500 future limit (that overflow errored the script).
+                                leftIdx = math.max(bar_index + 1, math.min(bar_index + 499, bar_index + lBars))
                                 rightIdx = math.max(leftIdx + 1, math.min(bar_index + 500, bar_index + rBars))
                                 bx = box.new(leftIdx, top, rightIdx, bot, xloc = xloc.bar_index,
                                      border_color = col, border_width = 1, bgcolor = fillCol)
                                 array.push(bxs, bx)
                             else
+                                // Past or spanning box: bar_time is exact and matches ATAS.
+                                // A future end simply clamps the right edge to the last bar.
                                 bx = box.new(l, top, rgt, bot, xloc = xloc.bar_time,
                                      border_color = col, border_width = 1,
                                      extend = hasEnd ? extend.none : extend.right,

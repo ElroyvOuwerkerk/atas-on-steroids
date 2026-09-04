@@ -10,6 +10,12 @@ Format: reverse-chronological. Newest entries at the top.
 
 Work currently in progress on the working tree (not yet committed).
 
+### Fixed — Pine: RE10020 runtime error on very-far-future boxes (halted the whole chart)
+- `tradingview-sync/atas-levels.pine` — a box whose start projected onto the far-future edge could error the entire script with `RE10020: Objects positioned using xloc.bar_index cannot be drawn further than 500 bars into the future`, which **halts the indicator on that chart** (this, not the multi-pane userscript logic, was why a chart with such a box "wasn't updating" — the NQ chart had a far-future box and its indicator crashed). Cause: the left edge was clamped to `bar_index + 500`, then the right edge became `left + 1` = `+501`, one past TradingView's hard limit. Fix: clamp the **left** edge at `bar_index + 499` so the right edge (`left + 1`) can never exceed `+500`. Very-far-future boxes now pin harmlessly to the right edge instead of crashing.
+
+### Changed — Pine: zone transparency + box positioning accuracy
+- `tradingview-sync/atas-levels.pine` — added a **"Zone/box fill transparency (%)"** input (default 92) that overrides the ATAS-derived fill opacity, so highlights are see-through enough to watch price enter them. Box time-anchoring reworked: boxes now use exact `xloc.bar_time` (pixel-accurate, matches ATAS) unless the box is **entirely** in the future (`start > last bar`), which alone falls back to `bar_index` projection. Previously any box with a future *end* used projection, which mis-placed past/spanning boxes closer to the current bar.
+
 ### Fixed — Pine: boxes drawn on future candles
 - `tradingview-sync/atas-levels.pine` — rectangles that extend past the last candle now render into the future. `xloc.bar_time` clamps any future timestamp to the last historical bar (TradingView limitation), so a box drawn on future candles in ATAS collapsed back to the latest bar. When a box's end is beyond the last bar, it's now projected onto `xloc.bar_index` (bars ahead computed from `timeframe.in_seconds()`, clamped to TV's 500-bar future limit); historical boxes still use `bar_time` for accuracy. Far-future/across-weekend projection is approximate (calendar-time based).
 
