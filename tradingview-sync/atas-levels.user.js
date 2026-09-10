@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ATAS Levels → TradingView
 // @namespace    atas-on-steroids
-// @version      3.22
+// @version      3.32
 // @description  Auto-syncs ATAS-drawn levels onto TradingView. The Pine indicator is symbol-aware (one config holds both ES and NQ and self-selects), so this only fills it when you save the workspace in ATAS — no action on ticker switches.
 // @match        https://www.tradingview.com/chart/*
 // @match        https://*.tradingview.com/chart/*
@@ -14,7 +14,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '3.22';
+  const VERSION = '3.32';
   const BACKEND = 'http://localhost:3001';
   const POLL_MS = 15000;   // levels change only on workspace save; 15s is plenty
 
@@ -143,26 +143,51 @@
     const a = document.activeElement;
     return a && (a.tagName === 'INPUT' || a.tagName === 'TEXTAREA' || a.isContentEditable);
   };
-  // Returns all candidate legend-title elements that read "ATAS Levels",
-  // trying several selectors since TradingView's DOM names drift.
-  function findLegendTitles(trace) {
-    const out = [];
-    const sel = [
-      '[data-name="legend-source-title"]',
-      '[class*="title-"][class*="legend"]',
-      '[data-name="legend"] [class*="title"]',
-    ];
-    for (const s of sel) {
-      const hits = [...document.querySelectorAll(s)];
-      if (trace) trace.push(`selector ${s}: ${hits.length} els`);
-      for (const el of hits) if (el.textContent.includes('ATAS Levels')) out.push(el);
+  // Returns one legend SOURCE-ROW per chart pane whose text reads "ATAS Levels".
+  // The user's charts hide the indicator rows (TradingView `hideInvisibleHover`),
+  // so the visible title span has 0 size and can't be found by sight — but the
+  // row element is still in the DOM as `<div class="item-<hash> …">` whose text
+  // is the indicator's name. React delegates events at the document root, so a
+  // dblclick dispatched on this row opens its settings even while it's hidden.
+  // We therefore match the ROW (not a visible box), keep the tightest-text one
+  // per pane (a wrapper holding several sources matches too, but its text is much
+  // longer), and dedupe panes by a visible ancestor's position (the row itself
+  // can be 0-size). Old data-name / visible-title heuristics are the fallback.
+  const LEGEND_NAME = 'ATAS Levels';
+  // A visible ancestor's rect — used to place a possibly 0-size hidden row on a pane.
+  function paneRectOf(el) {
+    for (let a = el, i = 0; a && i < 12; a = a.parentElement, i++) {
+      const r = a.getBoundingClientRect();
+      if (r.width > 120 && r.height > 4) return r;
     }
-    if (!out.length) {
-      // last resort: any leaf element whose exact text is the title
-      const leaves = [...document.querySelectorAll('span,div')]
-        .filter((e) => e.childElementCount === 0 && e.textContent.trim() === 'ATAS Levels');
-      if (trace) trace.push(`leaf exact-text "ATAS Levels": ${leaves.length}`);
-      out.push(...leaves);
+    return el.getBoundingClientRect();
+  }
+  function findLegendTitles(trace) {
+    const notOurs = (e) => !e.closest('#atas-levels-widget');
+    const hasName = (e) => (e.textContent || '').includes(LEGEND_NAME);
+    // Source rows — do NOT require visibility (they're hover-hidden here).
+    let rows = [...document.querySelectorAll('[class*="item-"]')].filter((e) => notOurs(e) && hasName(e));
+    // Tightest text first, so the ATAS Levels row beats a multi-source wrapper.
+    rows.sort((a, b) => (a.textContent || '').length - (b.textContent || '').length);
+    // Fallback: any visible element carrying the name (older/plain DOM).
+    let usedFallback = false;
+    if (!rows.length) {
+      usedFallback = true;
+      rows = [...document.querySelectorAll('[class*="title"], div, span')]
+        .filter((e) => { const r = e.getBoundingClientRect(); return r.width > 0 && r.height > 0 && r.height <= 80 && notOurs(e) && hasName(e); })
+        .sort((a, b) => { const ra = a.getBoundingClientRect(), rb = b.getBoundingClientRect(); return ra.width * ra.height - rb.width * rb.height; });
+    }
+    const out = [];
+    const seen = new Set();
+    for (const el of rows) {
+      const r = paneRectOf(el);
+      const key = Math.round(r.left / 80) + ':' + Math.round(r.top / 40);
+      if (seen.has(key)) continue;
+      seen.add(key); out.push(el);
+    }
+    if (trace) {
+      trace.push(`rows w/ name: ${rows.length}${usedFallback ? ' (fallback)' : ''}, panes: ${out.length}`);
+      trace.push('pane pos: ' + (out.map((e) => { const r = paneRectOf(e); return `${Math.round(r.left)},${Math.round(r.top)}`; }).join(' | ') || 'none'));
     }
     return out;
   }
@@ -173,46 +198,103 @@
     }
   }
 
-  // Open the indicator's settings panel by any means that works; returns the
-  // textarea once the panel is up, else null. Logs which method succeeded.
-  async function openSettings(titleEl, t) {
-    // The indicator's own settings gear is labelled exactly "Settings"
-    // (NOT "Show interval settings", which is the chart timeframe control).
-    const isGear = (b) => /^settings$/i.test((b.getAttribute('aria-label') || b.title || '').trim());
-
-    // Reveal hover actions on THIS title's legend row and its ancestors.
-    let row = titleEl;
-    const toHover = [titleEl];
-    for (let i = 0; i < 8 && row.parentElement; i++) { row = row.parentElement; toHover.push(row); }
-    toHover.forEach(hover);
-    await sleep(220);
-
-    // Gear on the SAME ROW as this title (a legend can list many indicators, each
-    // with its own gear stacked vertically — match the row, then nearest by x).
-    const tr = titleEl.getBoundingClientRect();
-    const tMid = tr.top + tr.height / 2;
-    let gear = null, best = Infinity;
-    for (const g of document.querySelectorAll('button, [role="button"]')) {
-      if (!isGear(g) || !isVisible(g)) continue;
-      const r = g.getBoundingClientRect();
-      if (Math.abs((r.top + r.height / 2) - tMid) > 14) continue;   // same row only
-      const d = Math.abs(r.left - tr.left);
-      if (d < best) { best = d; gear = g; }
+  // Drill from a legend box DOWN to the deepest element still holding the whole
+  // name — the actual rendered title node. TradingView's dblclick-to-open handler
+  // sits there, and a dblclick dispatched on an ancestor never bubbles THROUGH the
+  // title, so it must be fired on the title node (or a descendant) itself.
+  function titleLeaf(el) {
+    let cur = el;
+    for (let depth = 0; depth < 12; depth++) {
+      let next = null;
+      for (const c of cur.children) {
+        if (c.textContent.includes(LEGEND_NAME) && isVisible(c)) { next = c; break; }
+      }
+      if (!next) break;
+      cur = next;
     }
-    if (gear) hover(gear);
-    t.push('same-row gear: ' + (gear ? `@${Math.round(best)}px` : 'NONE'));
+    return cur;
+  }
+  // Double-click whatever is actually painted at a point (like a real cursor).
+  function dblclickAtPoint(x, y) {
+    const el = document.elementFromPoint(x, y);
+    if (el) doubleClick(el);
+    return el;
+  }
+
+  // The legend ROW (item-<hash>) that holds a given title element.
+  function legendRow(titleEl) {
+    let row = titleEl;
+    for (let i = 0; i < 8 && row; i++) {
+      if (/(^|\s)item-/.test((row.className || '').toString())) return row;
+      row = row.parentElement;
+    }
+    return titleEl.parentElement || titleEl;
+  }
+
+  // Close any modal that's up (Escape); used to clear a WRONG dialog (e.g. the
+  // chart Settings that the symbol row's ⋯ menu opens) before the next attempt.
+  const anyBigDialog = () => [...document.querySelectorAll('[class*="dialog"], [role="dialog"]')]
+    .some((e) => { const r = e.getBoundingClientRect(); return r.width > 300 && r.height > 200; });
+  async function escapeModal() {
+    for (let i = 0; i < 3 && anyBigDialog(); i++) {
+      document.body.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', keyCode: 27, which: 27, bubbles: true }));
+      document.body.dispatchEvent(new KeyboardEvent('keyup', { key: 'Escape', keyCode: 27, which: 27, bubbles: true }));
+      await sleep(250);
+    }
+  }
+
+  // Open the indicator's settings panel. The user's charts HIDE the indicator
+  // legend rows (TradingView `hideInvisibleHover` — only the symbol row shows),
+  // so there is no per-indicator gear/⋯ to click; the symbol's ⋯ just opens the
+  // CHART settings. But the hidden row is still in the DOM, and double-clicking
+  // the ROW element opens THAT indicator's settings. We can't know which ancestor
+  // of the located title is the row, so we walk outward double-clicking each
+  // (skipping oversized containers), validating by the Inputs/Visibility tabs,
+  // and Escape-closing any wrong dialog between tries. Returns the textarea or null.
+  async function openSettings(titleEl, t) {
+    await escapeModal();                       // clear a leftover wrong dialog
+    [titleLeaf(titleEl), titleEl, legendRow(titleEl)].forEach(hover);
+    await sleep(200);
+
+    // One-time structural dump so the trace shows the real hidden-row layout.
+    if (!t._dumped) {
+      t._dumped = true;
+      const chain = [];
+      for (let a = titleEl, i = 0; a && i < 7; a = a.parentElement, i++) {
+        const r = a.getBoundingClientRect();
+        chain.push(`${((a.className || '').toString().split(' ')[0] || a.tagName).slice(0, 18)}[${Math.round(r.width)}x${Math.round(r.height)}]`);
+      }
+      t.push('anc: ' + chain.join(' < '));
+    }
 
     const tryOpen = async (label, fn) => {
-      try { await fn(); } catch (e) { t.push(`${label} threw: ${e.message}`); return false; }
-      const ok = await waitFor(() => (settingsDialogOpen() ? true : null), 1500);
-      t.push(`${label}: dialog=${ok ? 'yes' : 'no'}`);
+      try { await fn(); } catch (e) { t.push(`${label} threw: ${e.message}`); }
+      const ok = await waitFor(() => (settingsDialogOpen() ? true : null), 1400);
+      if (!ok && anyBigDialog()) { t.push(`${label}: wrong-dialog`); await escapeModal(); }
+      else t.push(`${label}: ${ok ? 'YES' : 'no'}`);
       return !!ok;
     };
 
-    // Primary: double-click the exact title (unambiguous — opens THIS indicator).
-    // Fallback: the same-row gear.
-    let opened = await tryOpen('title dblclick', () => doubleClick(titleEl));
-    if (!opened && gear) opened = await tryOpen('gear', () => { hover(gear); realClick(gear); });
+    // Double-click candidates: the ROW itself (may be 0-size while hover-hidden,
+    // but React delegates dblclick at the document root so it still fires), its
+    // inner name-bearing nodes, and small ancestors. settingsDialogOpen() only
+    // trues on Inputs+Visibility, so the chart Settings dialog can't be mistaken
+    // for success; a wrong dialog is Escaped between tries.
+    const cands = [];
+    const add = (e) => { if (e && !cands.includes(e)) cands.push(e); };
+    add(titleEl);
+    [...titleEl.querySelectorAll('*')].slice(0, 14).forEach((e) => { if ((e.textContent || '').includes(LEGEND_NAME)) add(e); });
+    for (let a = titleEl.parentElement, i = 0; a && i < 5; a = a.parentElement, i++) {
+      const r = a.getBoundingClientRect();
+      if (r.width > 0 && r.width <= 480 && r.height <= 140) add(a);
+    }
+    let opened = false;
+    for (const c of cands) {
+      if (opened) break;
+      const r = c.getBoundingClientRect();
+      const tag = ((c.className || '').toString().split(' ')[0] || c.tagName).slice(0, 16);
+      opened = await tryOpen(`dblclick ${tag}[${Math.round(r.width)}x${Math.round(r.height)}]`, () => doubleClick(c));
+    }
     if (!opened) { t.push('settings dialog never opened'); return null; }
 
     // Switch to the Inputs tab, then grab the Levels textarea.
@@ -235,43 +317,54 @@
     return ta;
   }
 
+  // Coarse on-screen position bucket — identifies a legend row's PANE. The row is
+  // hover-hidden (0-size), so bucket by a VISIBLE ancestor's position (same as the
+  // finder) — using the row's own 0×0 rect collapses both charts to one pane.
+  const paneKey = (el) => {
+    const r = paneRectOf(el);
+    return Math.round(r.left / 80) + ':' + Math.round(r.top / 40);
+  };
+
   async function applyToChart(csv, trace) {
     const t = trace || [];
-    const all = findLegendTitles(t);
-    if (!all.length) return { ok: false, why: '"ATAS Levels" title not found on page', trace: t };
+    const initial = findLegendTitles(t);
+    if (!initial.length) return { ok: false, why: '"ATAS Levels" title not found on page', trace: t };
 
     // A layout can hold several charts, each with its own ATAS Levels indicator.
-    // Dedupe to one title per pane (by on-screen position) and fill them all.
-    const seen = new Set();
-    const titles = [];
-    for (const el of all) {
-      const r = el.getBoundingClientRect();
-      const key = Math.round(r.left / 60) + ':' + Math.round(r.top / 60);
-      if (seen.has(key)) continue;
-      seen.add(key); titles.push(el);
-    }
-    t.push(`ATAS Levels panes: ${titles.length}`);
+    // Enumerate the distinct panes by position (left→right); we re-find each
+    // title FRESH just before we open it, so a legend re-render can't leave us
+    // holding a stale element (which double-clicks the wrong / left chart).
+    const keys = [];
+    for (const el of initial) { const k = paneKey(el); if (!keys.includes(k)) keys.push(k); }
+    keys.sort((a, b) => (+a.split(':')[0]) - (+b.split(':')[0]));
+    t.push(`ATAS Levels panes: ${keys.length} [${keys.join(', ')}]`);
 
     let applied = 0;
-    for (const title of titles) {
-      // Never start a pane while a dialog is still open — that's what makes the
-      // detector grab the wrong (stale) textarea in multi-chart layouts.
+    const done = new Set();
+    for (const key of keys) {
+      // Never start a pane while a dialog is still open — a leftover dialog makes
+      // the detector grab the wrong (stale) textarea in multi-chart layouts.
       if (settingsDialogOpen()) await waitFor(() => (!settingsDialogOpen() ? true : null), 3000);
+      // Re-query live titles; pick this pane's, excluding panes already filled.
+      const fresh = findLegendTitles().filter((el) => !done.has(paneKey(el)));
+      const title = fresh.find((el) => paneKey(el) === key);
+      if (!title) { t.push(`pane ${key}: title gone after re-render — skipping`); continue; }
+      done.add(key);
       const textarea = await openSettings(title, t);
-      if (!textarea) { t.push('pane: settings would not open'); continue; }
+      if (!textarea) { t.push(`pane ${key}: settings would not open`); continue; }
       fillTextarea(textarea, csv, t);
       await sleep(200);
       const visBtns = [...document.querySelectorAll('button, [role="button"]')].filter(isVisible);
       const ok = document.querySelector('[data-name="submit-button"]')
             || visBtns.find((b) => /^(ok|apply)$/i.test((b.textContent || '').trim()));
-      if (!ok) { t.push('pane: OK not found'); continue; }
+      if (!ok) { t.push(`pane ${key}: OK not found`); continue; }
       realClick(ok);
       applied++;
       // Wait for THIS dialog to fully close before touching the next pane.
       await waitFor(() => (!settingsDialogOpen() ? true : null), 3000);
       await sleep(250);
     }
-    t.push(`panes applied: ${applied}/${titles.length}`);
+    t.push(`panes applied: ${applied}/${keys.length}`);
     if (!applied) return { ok: false, why: 'no ATAS Levels indicator could be filled', trace: t };
     saveLayout(t);   // persist into the chart layout so it survives reloads / shows everywhere
     return { ok: true, trace: t };
@@ -476,6 +569,7 @@
         lastApplied = combined;
         flash('✓ pushed & saved');
       } else {
+        // Only surface the per-pane diagnostic trace when something fails.
         flash(`push failed: ${res.why}`);
         alert('ATAS Levels v' + VERSION + ' — Push failed\n\n' + (res.trace || trace).join('\n') +
               '\n\nRESULT: ' + res.why);
