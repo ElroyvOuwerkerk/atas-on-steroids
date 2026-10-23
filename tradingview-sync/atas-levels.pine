@@ -34,17 +34,19 @@ fillTransp  = input.int(92,      title = "Zone/box fill transparency (%)", minva
      tooltip = "Higher = more see-through. Overrides the ATAS fill opacity so you can see candles inside a zone.")
 
 alertZones  = input.bool(true,  title = "Alert on highlights (zones)", group = "Alerts",
-     tooltip = "Fires a TradingView alert when price enters a zone. Create one alert on this indicator with condition 'Any alert() function call'.")
-alertBoxes  = input.bool(false, title = "Alert on rectangles", group = "Alerts",
-     tooltip = "Rectangles only alert while their time window is still active — once the chart has passed a box's end time it is ignored.")
-alertLines  = input.bool(false, title = "Alert on lines", group = "Alerts")
-alertCooldown = input.int(15, title = "Cooldown per zone (minutes)", minval = 0, group = "Alerts",
-     tooltip = "After a zone alerts, it won't alert again for this many minutes — avoids repeat pings while price hovers at an edge. 0 = no cooldown.")
+     tooltip = "Fires ONCE when price first enters a zone, then never again for that zone. Create one alert on this indicator with condition 'Any alert() function call'.")
+alertBoxes  = input.bool(true,  title = "Alert on rectangles", group = "Alerts",
+     tooltip = "Fires ONCE per box, and only while the box's time window is still active (ignored once the chart has passed its end time).")
+alertLines  = input.bool(false, title = "Alert on lines", group = "Alerts",
+     tooltip = "Off by default. When on, a line fires EVERY time price returns to it (re-arms on each entry, subject to the cooldown below). Zones/boxes always fire once regardless.")
+alertCooldown = input.int(15, title = "Cooldown per line (minutes)", minval = 0, group = "Alerts",
+     tooltip = "After a line alerts, it won't alert again for this many minutes — avoids repeat pings while price hovers at the line. 0 = no cooldown. (Zones/boxes fire once, so this only affects lines.)")
 
-// ── Chart family (mirror of the backend's _group, micro → mini) ──
+// ── Chart family (mirror of the backend's _group) — micros (MES/MNQ) and nanos
+//    (NES/NNQ) map to the mini family; all sizes quote the same index value. ──
 familyOf(string root) =>
     r = str.upper(root)
-    r == "MES" ? "ES" : r == "MNQ" ? "NQ" : r == "MGC" ? "GC" : r == "MYM" ? "YM" : r == "M2K" ? "RTY" : r
+    r == "MES" or r == "NES" ? "ES" : r == "MNQ" or r == "NNQ" ? "NQ" : r == "MGC" ? "GC" : r == "MYM" ? "YM" : r == "M2K" ? "RTY" : r
 
 chartFam = famOverride != "Auto" ? famOverride : familyOf(syminfo.root)
 
@@ -180,9 +182,10 @@ if barstate.islast
                         array.push(lbs, lb)
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  ALERTS — fire a TradingView alert when price ENTERS a zone/box (once on
-//  entry, not while it sits inside). Set up: create one alert on this indicator
-//  with condition "Any alert() function call".
+//  ALERTS — fire a TradingView alert when price ENTERS a zone (highlight) or
+//  rectangle, ONCE each (first entry only, then silent). Horizontal lines are
+//  OFF by default (toggle on if you want per-touch line alerts). Set up: create
+//  one alert on this indicator with condition "Any alert() function call".
 // ─────────────────────────────────────────────────────────────────────────────
 var float[]  aTop  = array.new<float>()
 var float[]  aBot  = array.new<float>()
@@ -190,6 +193,8 @@ var string[] aName = array.new<string>()
 var bool[]   aIn   = array.new<bool>()    // was price inside this object on the prior bar
 var float[]  aEnd  = array.new<float>()   // end epoch (sec); 0 = no end / timeless (zones)
 var float[]  aLast = array.new<float>()   // timenow (ms) of this object's last alert; 0 = never
+var bool[]   aOnce = array.new<bool>()    // true for zones/boxes (fire once), false for lines (re-arm)
+var bool[]   aFired = array.new<bool>()   // a once-only object has already alerted
 var bool     aParsed = false
 
 // Parse the alert targets once (re-runs automatically if the input or symbol changes).
@@ -212,6 +217,8 @@ if not aParsed and str.length(levelsStr) > 0
                     array.push(aIn, false)
                     array.push(aEnd, na(eSec) ? 0.0 : eSec)
                     array.push(aLast, 0.0)
+                    array.push(aOnce, k == "Z" or k == "R")   // zones/boxes: once; lines: always
+                    array.push(aFired, false)
 
 // On every bar, check entry transitions. alert() only actually fires on
 // real-time bars, so history just primes the inside/outside state.
@@ -224,12 +231,16 @@ if array.size(aTop) > 0
         // (Zones have endSec 0 → always active; rectangles ignored once expired.)
         endSec = array.get(aEnd, i)
         active = endSec == 0 or endSec * 1000 >= timenow
-        // Cooldown gate: skip if this zone alerted within the cooldown window.
+        // Cooldown gate (lines only): skip if this line alerted within the window.
         lastT = array.get(aLast, i)
         cool = alertCooldown <= 0 or lastT == 0 or (timenow - lastT) >= alertCooldown * 60000
-        if touching and not array.get(aIn, i) and active and cool
+        // Once gate: zones/boxes fire a single time and then stay silent.
+        once = array.get(aOnce, i)
+        spent = once and array.get(aFired, i)
+        if touching and not array.get(aIn, i) and active and cool and not spent
             nm = array.get(aName, i)
             rng = str.tostring(bot, format.mintick) + "–" + str.tostring(top, format.mintick)
             alert("ATAS level hit: " + (str.length(nm) > 0 ? nm + " (" + rng + ")" : rng) + " on " + syminfo.ticker, alert.freq_once_per_bar)
             array.set(aLast, i, timenow)
+            array.set(aFired, i, true)
         array.set(aIn, i, touching)

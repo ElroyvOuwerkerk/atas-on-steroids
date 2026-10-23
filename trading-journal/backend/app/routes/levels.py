@@ -16,7 +16,7 @@ micros trade at identical prices — one level set serves both charts.
 """
 import json
 import re
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 from fastapi import APIRouter
@@ -39,8 +39,10 @@ _KIND_BY_TYPE = {
 # Futures month code + year suffix, e.g. "M6" / "M26" / "M2026" in "ESM6".
 _FUT_SUFFIX = re.compile(r"[FGHJKMNQUVXZ]\d{1,4}$")
 
-# Micro contracts share their mini's levels (same index price).
-_FAMILY = {"MES": "ES", "MNQ": "NQ", "MGC": "GC", "M2K": "RTY", "MYM": "YM"}
+# Micro (MES/MNQ) and nano (NES/NNQ) contracts share their mini's levels —
+# every size on an index quotes the same index price.
+_FAMILY = {"MES": "ES", "MNQ": "NQ", "NES": "ES", "NNQ": "NQ",
+           "MGC": "GC", "M2K": "RTY", "MYM": "YM"}
 
 # Named colours ATAS may store instead of an RGB triple.
 _NAMED_COLORS = {
@@ -157,10 +159,10 @@ def _parse_workspace(path: Path) -> dict[str, LevelSet]:
             continue
 
         # Rectangle time anchors; ExtendRight overrides the second anchor.
-        start = obj.get("_firstTime", "") or ""
+        start = _utc_iso(obj.get("_firstTime", "") or "")
         end = ""
         if kind == "R":
-            end = obj.get("_secondTime", "") or ""
+            end = _utc_iso(obj.get("_secondTime", "") or "")
             if obj.get("ExtendRight") is True:
                 end = ""
             if obj.get("ExtendLeft") is True:
@@ -204,11 +206,26 @@ def _levels() -> dict[str, LevelSet]:
     return _cache
 
 
+def _utc_iso(s: str) -> str:
+    # ATAS stores workspace anchor times in UTC but as NAIVE ISO strings (no
+    # zone) — e.g. "2026-04-15T22:00:00" is the 22:00 UTC globex open. Mark them
+    # explicitly UTC so downstream `new Date()` (browser) and fromisoformat don't
+    # reinterpret them in the machine's local zone, which shifted every drawn
+    # object left by the local UTC offset (2h / 4 bars on a 30m chart in
+    # Amsterdam summer). Idempotent: already-zoned strings pass through.
+    if not s or s.endswith("Z") or "+" in s[10:] or "-" in s[10:]:
+        return s
+    return s + "Z"
+
+
 def _epoch(iso: str) -> int:
     if not iso:
         return 0
     try:
-        return int(datetime.fromisoformat(iso).timestamp())
+        dt = datetime.fromisoformat(iso.replace("Z", "+00:00"))
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        return int(dt.timestamp())
     except ValueError:
         return 0
 
