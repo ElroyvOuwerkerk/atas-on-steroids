@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ATAS Levels → TradingView
 // @namespace    atas-on-steroids
-// @version      3.34
+// @version      3.35
 // @description  Auto-syncs ATAS-drawn levels onto TradingView. The Pine indicator is symbol-aware (one config holds both ES and NQ and self-selects), so this only fills it when you save the workspace in ATAS — no action on ticker switches.
 // @match        https://www.tradingview.com/chart/*
 // @match        https://*.tradingview.com/chart/*
@@ -14,7 +14,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '3.34';
+  const VERSION = '3.35';
   const BACKEND = 'http://localhost:3001';
   const POLL_MS = 15000;   // levels change only on workspace save; 15s is plenty
 
@@ -23,11 +23,41 @@
   let lastApplied = '';
   let applying = false;
 
+  // Diagnostics for the widget: prove the loop is alive (lastContactAt) and show
+  // when the draws were actually pushed to the chart (lastAppliedAt), vs how long
+  // the current feed has been waiting to apply (pendingSince).
+  let lastContactAt = 0;   // last successful fetch of valid levels JSON from the backend
+  let lastAppliedAt = Number(localStorage.getItem('atasLevels.lastAppliedAt')) || 0;
+  let pendingSince = 0;    // when the feed first differed from what's on the chart
+  function markApplied() {
+    lastApplied = combined;
+    lastAppliedAt = Date.now();
+    pendingSince = 0;
+    try { localStorage.setItem('atasLevels.lastAppliedAt', String(lastAppliedAt)); } catch (e) {}
+  }
+
   const autoKey = 'atasLevels.auto';
   const isAuto = () => localStorage.getItem(autoKey) !== '0';
   const setAuto = (v) => localStorage.setItem(autoKey, v ? '1' : '0');
 
   const ep = (iso) => { if (!iso) return 0; const d = new Date(iso); return isNaN(d) ? 0 : Math.floor(d.getTime() / 1000); };
+
+  const two = (n) => String(n).padStart(2, '0');
+  function fmtClock(ms) {
+    if (!ms) return '—';
+    const d = new Date(ms);
+    return `${two(d.getHours())}:${two(d.getMinutes())}:${two(d.getSeconds())} · ${d.getDate()} ${d.toLocaleDateString(undefined, { month: 'short' })}`;
+  }
+  function fmtAgo(ms) {
+    if (!ms) return 'never';
+    const s = Math.max(0, Math.floor((Date.now() - ms) / 1000));
+    if (s < 60) return s + 's ago';
+    const m = Math.floor(s / 60);
+    if (m < 60) return m + 'm ago';
+    const h = Math.floor(m / 60);
+    if (h < 24) return h + 'h ago';
+    return Math.floor(h / 24) + 'd ago';
+  }
 
   function fetchAll() {
     return new Promise((resolve) => {
@@ -49,6 +79,7 @@
                   `|${l.name || ''}|${ep(l.start)}|${ep(l.end)}`);
               }
             }
+            lastContactAt = Date.now();
             resolve({ csv: recs.join(';'), counts: cnt });
           } catch (e) { resolve({ csv: '', counts: {} }); }
         },
@@ -585,7 +616,7 @@
     try {
       const res = await applyToChart(combined);
       if (res.ok) {
-        lastApplied = combined; autoFailUntil = 0;
+        markApplied(); autoFailUntil = 0;
         flash('✓ levels applied');
         // Re-snapshot the alert onto the new zones (opt-in). Once per change,
         // with its own backoff so a broken refresh can't loop every poll.
@@ -622,7 +653,6 @@
 
   function render() {
     if (!host) return;
-    const synced = combined && combined === lastApplied;
     const families = Object.keys(counts).sort();
     const countStr = families.length ? families.map((f) => `${f} ${counts[f]}`).join('  ') : 'no data';
     host.innerHTML = `
@@ -637,7 +667,8 @@
           </label>
         </div>
       </div>
-      <div style="color:#9a9aa2;margin-bottom:6px;">${countStr} <span style="color:${synced ? '#3ec27a' : '#c9a23e'}">${synced ? '✓ synced' : '… pending'}</span></div>
+      <div style="color:#9a9aa2;margin-bottom:4px;">${countStr} <span id="atas-chip">${statusHtml()}</span></div>
+      <div id="atas-ts" style="color:#6f6f78;font-size:10px;margin-bottom:6px;line-height:1.5;">${tsHtml()}</div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;">
         <button id="atas-copy" style="${BTN}">Copy all</button>
         <button id="atas-push" style="${BTN};background:#3a3a44;">Push now</button>
@@ -670,7 +701,7 @@
         res = { ok: false, why: 'exception: ' + (e && e.message), trace };
       }
       if (res.ok) {
-        lastApplied = combined;
+        markApplied();
         flash('✓ pushed & saved');
       } else {
         // Only surface the per-pane diagnostic trace when something fails.
@@ -691,15 +722,51 @@
     flashTimer = setTimeout(() => { el.textContent = ''; }, 6000);
   }
 
+  // The sync-state chip: green when the chart matches the feed, else "pending"
+  // with how long it has waited. Amber past ~45s, red past ~3min — that long a
+  // wait means auto-apply is stuck (backing off, a dialog is open, or failing),
+  // which is exactly the "it didn't refresh" case worth catching.
+  function statusHtml() {
+    if (!combined) return `<span style="color:#6f6f78">no data</span>`;
+    if (combined === lastApplied) return `<span style="color:#3ec27a">✓ synced</span>`;
+    const dur = pendingSince ? Math.floor((Date.now() - pendingSince) / 1000) : 0;
+    const col = dur > 180 ? '#e05252' : (dur > 45 ? '#d98a1f' : '#c9a23e');
+    const since = dur ? ' ' + fmtAgo(pendingSince).replace(' ago', '') : '';
+    return `<span style="color:${col}">… pending${since}</span>`;
+  }
+  // Two lines: when the draws were last pushed to the chart (what you asked for),
+  // and when the loop last reached the backend. If "checked" goes stale the sync
+  // itself has died, which a last-refresh time alone would not reveal.
+  function tsHtml() {
+    const applied = lastAppliedAt
+      ? `refreshed ${fmtClock(lastAppliedAt)} <span style="opacity:.7">(${fmtAgo(lastAppliedAt)})</span>`
+      : `refreshed never`;
+    const stale = !lastContactAt || (Date.now() - lastContactAt > 45000);
+    const cCol = stale ? '#e05252' : '#6f6f78';
+    return `${applied}<br><span style="color:${cCol}">checked ${fmtAgo(lastContactAt)}</span>`;
+  }
+  // Keep the chip + timestamps live every second without rebuilding the buttons.
+  function tick1s() {
+    if (!host) return;
+    const chip = document.getElementById('atas-chip');
+    const ts = document.getElementById('atas-ts');
+    if (chip) chip.innerHTML = statusHtml();
+    if (ts) ts.innerHTML = tsHtml();
+  }
+
   async function refresh() {
     const { csv, counts: c } = await fetchAll();
     const changed = csv !== combined || JSON.stringify(c) !== JSON.stringify(counts);
     combined = csv; counts = c;
     if (changed) render();   // only redraw the widget when something actually changed
     await autoTick();        // autoTick is a no-op unless the feed differs from what's applied
+    // Track how long the feed has been waiting to apply (after autoTick settled).
+    if (combined && combined !== lastApplied) { if (!pendingSince) pendingSince = Date.now(); }
+    else pendingSince = 0;
   }
 
   buildWidget();
   refresh();
   setInterval(refresh, POLL_MS);
+  setInterval(tick1s, 1000);
 })();

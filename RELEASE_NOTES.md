@@ -10,6 +10,14 @@ Format: reverse-chronological. Newest entries at the top.
 
 Work currently in progress on the working tree (not yet committed).
 
+### Added — Level Sync userscript: last-refresh timestamps + stale/pending alarm (v3.35)
+- `tradingview-sync/atas-levels.user.js` — the widget now shows two lines under the counts so you can tell at a glance whether auto-sync is actually working:
+  - **refreshed HH:MM:SS · D Mon (N ago)** — when the draws were last pushed onto the chart (set on a successful auto-apply or a manual Push). Persisted in `localStorage` (`atasLevels.lastAppliedAt`) so it survives a tab reload, since the draws themselves persist on the chart.
+  - **checked N ago** — when the poll loop last got valid JSON from the backend. Turns red past 45s, which means the loop or backend has died (a plain last-refresh time would still look fine in that case).
+  - The sync chip now shows **how long** the feed has been pending: amber past 45s, red past 3min. Auto normally clears pending within one 15s poll, so a pending state that lasts minutes is the "it didn't refresh" case (auto backing off after a failure, a TV dialog open, or a silent failure) made visible.
+  - A 1s ticker updates only the chip and timestamp spans, so the counters climb live without rebuilding the buttons or checkboxes.
+  - Rationale: a bare last-refresh time can't distinguish "nothing changed in ATAS" (healthy, legitimately old) from "auto stopped firing" (broken). The checked-vs-refreshed pair plus the pending duration is what separates them.
+
 ### Added — ATAS indicator: Stale Box Alert Muter (turns off a box's alert once it is fully in the past)
 - `indicators/StaleBoxAlertMuter.cs` (new) — ATAS fires a rectangle's approximation alert purely on **price**; it never consults the box's time anchors, so a box drawn around an old session keeps pinging every time price revisits that band. This indicator clears `UseApproximationAlert` on any `RectangleObj` whose right edge is behind the reference clock.
   - **Reaching the boxes.** The documented API is a dead end: `IDrawingObjectsListInfo` declares only `HorizontalLines` and `HorizontalChannels` (which is why `ZoneAlertNotifier` only ever handled HighlightY zones). The concrete object behind it is `ChartData+DrawingObjectsListCollection`, holding a private field of type `DrawingObjectsCollection`, whose **public** `GetAllObjects(Instrument)` / `GetObjectsForSnapshot(bool)` return every drawing object on the chart. Both bottom out in `GlobalTradingObjectsStore`, which copies **references** into a fresh `List` with no cloning, so the objects handed back are the live ones the alert engine ticks (verified by decompiling `OFT.Platform.Core`, ATAS X 8.0.15.640). `RectangleObj.OnNewTicks()` opens with `if (!UseApproximationAlert) return;`, so clearing that one bool kills the alert from the next tick.
