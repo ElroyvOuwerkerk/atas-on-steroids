@@ -4,3 +4,12 @@ __pycache__/
 
 # Claude Code worktree isolation (harness-managed, transient)
 .claude/worktrees/
+
+# Build output (dotnet rebuilds it; the deploy copies the DLL by hand)
+indicators/bin/
+indicators/obj/
+trading-journal/plugin/bin/
+trading-journal/plugin/obj/
+
+# Trading journal database: his real trades, personal data
+trading-journal/backend/*.db

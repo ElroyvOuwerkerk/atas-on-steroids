@@ -10,6 +10,11 @@ Format: reverse-chronological. Newest entries at the top.
 
 Work currently in progress on the working tree (not yet committed).
 
+### Changed: a CLAUDE.md, and build output and the journal database out of git
+- `CLAUDE.md` (new): what is where, five hard rules (never edit an existing script; release notes on every change; turn `auto` off before the Pine Editor; check what the platform already has; commit to `main` only when asked, explicit paths), the ATAS facts that cost time to learn, and the userscript debugging playbook. These rules lived only in Claude's private memory, which no other tool sees and which a fresh session only gets as index lines.
+- `.gitignore`: `indicators/bin/`, `indicators/obj/`, `trading-journal/plugin/bin/`, `trading-journal/plugin/obj/` and `trading-journal/backend/*.db` are no longer tracked. The files stay on disk, so the build, the DLL deploy and the journal backend work as before. Every build used to show 12 changed files, and the journal database with real trades (plus an iCloud conflict copy, `journal 2.db`) was on GitHub. Older commits still contain them.
+- Elroy chose all of this on 2026-11-10 in the AI usage dashboard session.
+
 ### Added — Level Sync userscript: last-refresh timestamps + stale/pending alarm (v3.35)
 - `tradingview-sync/atas-levels.user.js` — the widget now shows two lines under the counts so you can tell at a glance whether auto-sync is actually working:
   - **refreshed HH:MM:SS · D Mon (N ago)** — when the draws were last pushed onto the chart (set on a successful auto-apply or a manual Push). Persisted in `localStorage` (`atasLevels.lastAppliedAt`) so it survives a tab reload, since the draws themselves persist on the chart.

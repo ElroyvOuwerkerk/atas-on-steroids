@@ -1,5 +1,0 @@
-/Users/lroy/Documents/GitHub/atas-on-steroids/obj/Debug/net8.0/AtasOnSteroids.csproj.AssemblyReference.cache
-/Users/lroy/Documents/GitHub/atas-on-steroids/obj/Debug/net8.0/AtasOnSteroids.GeneratedMSBuildEditorConfig.editorconfig
-/Users/lroy/Documents/GitHub/atas-on-steroids/obj/Debug/net8.0/AtasOnSteroids.AssemblyInfoInputs.cache
-/Users/lroy/Documents/GitHub/atas-on-steroids/obj/Debug/net8.0/AtasOnSteroids.AssemblyInfo.cs
-/Users/lroy/Documents/GitHub/atas-on-steroids/obj/Debug/net8.0/AtasOnSteroids.csproj.CoreCompileInputs.cache
