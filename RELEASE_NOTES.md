@@ -10,6 +10,11 @@ Format: reverse-chronological. Newest entries at the top.
 
 Work currently in progress on the working tree (not yet committed).
 
+### Fixed: Level Sync userscript never fills the Pine Editor (v3.36)
+- `tradingview-sync/atas-levels.user.js`: the fill now hard-refuses TradingView's Pine Editor as a target, so a sync can no longer overwrite your Pine source. New `inPineEditor(el)` helper (matches `.monaco-editor`). `findInput()` skips any textarea inside a Monaco editor, and `fillTextarea()` returns early with a `fill REFUSED` trace line if it is ever handed one.
+- Why this is the real fix, not the handover's proposed `document.activeElement` guard: auto-apply already bails while you are typing in the editor, because `userIsTyping()` sees the focused textarea. The clobber happens when the Pine Editor is open but unfocused: a poll fires, the finder sees Monaco's visible textarea, and its surrounding text contains "ATAS Levels" (the Pine source itself), so it gets mistaken for the indicator's input. Excluding Monaco at the finder closes that path at the root.
+- This does not replace the habit of unchecking `auto` before opening the Pine Editor. It is a safety net underneath it. Requested by Elroy on 2026-11-10.
+
 ### Changed: a CLAUDE.md, and build output and the journal database out of git
 - `CLAUDE.md` (new): what is where, five hard rules (never edit an existing script; release notes on every change; turn `auto` off before the Pine Editor; check what the platform already has; commit to `main` only when asked, explicit paths), the ATAS facts that cost time to learn, and the userscript debugging playbook. These rules lived only in Claude's private memory, which no other tool sees and which a fresh session only gets as index lines.
 - `.gitignore`: `indicators/bin/`, `indicators/obj/`, `trading-journal/plugin/bin/`, `trading-journal/plugin/obj/` and `trading-journal/backend/*.db` are no longer tracked. The files stay on disk, so the build, the DLL deploy and the journal backend work as before. Every build used to show 12 changed files, and the journal database with real trades (plus an iCloud conflict copy, `journal 2.db`) was on GitHub. Older commits still contain them.

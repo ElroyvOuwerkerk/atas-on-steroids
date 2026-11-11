@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ATAS Levels → TradingView
 // @namespace    atas-on-steroids
-// @version      3.35
+// @version      3.36
 // @description  Auto-syncs ATAS-drawn levels onto TradingView. The Pine indicator is symbol-aware (one config holds both ES and NQ and self-selects), so this only fills it when you save the workspace in ATAS — no action on ticker switches.
 // @match        https://www.tradingview.com/chart/*
 // @match        https://*.tradingview.com/chart/*
@@ -14,7 +14,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '3.35';
+  const VERSION = '3.36';
   const BACKEND = 'http://localhost:3001';
   const POLL_MS = 15000;   // levels change only on workspace save; 15s is plenty
 
@@ -118,10 +118,16 @@
     }
     el.dispatchEvent(new MouseEvent('dblclick', { ...o, detail: 2 }));
   }
+  // A Monaco editor root — TradingView's Pine Editor is one. Its text input is a
+  // real <textarea>, so the level finder can mistake it for our indicator's input
+  // (the Pine source even contains "ATAS Levels"). Filling it clobbers the user's
+  // Pine source, so we exclude it from the finder AND hard-refuse it at the fill.
+  const inPineEditor = (el) => !!(el && el.closest && el.closest('.monaco-editor'));
   // Fill a textarea the way a real paste does. TradingView's editor ignores a
   // programmatically-set .value, so use the browser's native insertText (fires
   // a trusted input event the editor accepts); fall back to the React setter.
   function fillTextarea(ta, value, t) {
+    if (inPineEditor(ta)) { if (t) t.push('fill REFUSED: target is the Pine Editor (protecting your source)'); return; }
     ta.focus();
     try { ta.select(); } catch (e) {}
     let ok = false;
@@ -157,7 +163,7 @@
   // The indicator settings dialog is the only thing with Inputs + Visibility tabs.
   const settingsDialogOpen = () => !!(visLeaf('Visibility') && visLeaf('Inputs'));
   function findInput() {
-    const tas = [...document.querySelectorAll('textarea')].filter(isVisible);
+    const tas = [...document.querySelectorAll('textarea')].filter((ta) => isVisible(ta) && !inPineEditor(ta));
     if (!tas.length) return null;
     // Prefer the textarea whose panel clearly belongs to our indicator.
     for (const ta of tas) {
