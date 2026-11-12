@@ -10,6 +10,49 @@ Format: reverse-chronological. Newest entries at the top.
 
 Work currently in progress on the working tree (not yet committed).
 
+### Added: ChartChampions study notes (`chartchampions/`) — Severin strategy playbook
+- New `chartchampions/` knowledge base distilling Severin's method from the CC member portal (each portal lesson ships a written summary + timestamped highlights next to the video; these condense that into the concrete rules, for later review and for building indicators). Private study notes, not a copy of the videos.
+- `chartchampions/README.md` — index, scope/legal note, and a capture tracker for all 18 course modules (priority-ranked) plus the Speed Run / Glossary / Vault sections.
+- `chartchampions/notes/building-plans-and-context.md` — full notes on the core module (15 lessons): trading bias, traders checklist, the Severin scalping strategy (ExoCharts workspace, daily plan, execution rules: risk <1%, min 2:1, ES 12-tick→20/25/30, NQ 26-tick→40/50/60, loss-streak sizing), the 3-candle entry system (COT/COC/Momentum, extreme-quartile 88% stat), plan modification, DSF + market profile, liquidity auctions.
+- `chartchampions/notes/indicators-and-tools.md` (14 lessons), `chartchampions/notes/orderflow-and-footprint.md` (9 lessons), `chartchampions/notes/atas.md` (10 lessons) — the three ★★★ technical modules. Key mechanical rules captured: value-area trading (short VAH, long VAL, never at POC), naked-POC first touch + the 80% rule, OI four-quadrant, VWAP-close "star" levels, divergence classes, and the order-flow definitions (imbalance = diagonal Fib 618 / ~400%+ ratio, 350% in the CC ATAS template; buy/sell block = 3+ stacked imbalances; delta clusters = trapped traders; CCTR = the trend-reversal template; CC zone = 0.618-0.66) plus the exact CC ATAS template settings (value area 68%, Fixed TPO Ctrl+F3, 15/30/60/90-day look-back, fib F8 + 66%).
+- `chartchampions/playbook.md` — synthesized daily decision flow (plan → bias → context gate → COT/COC/Momentum entry → risk → management → stand-aside); the open questions from the first pass (buy/sell block, CCTR, CC zone, order-flow confirmation) are now resolved inline.
+- `chartchampions/indicator-backlog.md` — mechanical pieces mapped to candidate ATAS/TV indicators (3-candle detector, PDH/PDL guard, extreme-quartile stat, supply/demand N-touch tracker, liquidity-auction state machine, risk/loss-streak helper, stacked-imbalance/block detector, value-area + naked-POC tool, OI classifier, delta-cluster/VWAP-close flags). Backlog only; nothing built yet.
+- **2026-11-12: six more modules harvested** (all ★★ priority), bringing coverage to **10 of 18 modules**:
+  - `chartchampions/notes/entering-trades.md` (9 lessons) — the execution module: consolidation bias, confluence, compounding/averaging/laddering, SFP (+ order-flow 3-step), order types, TP%, moving the stop only on invalidation change, HTF/LTF (LTF = <4H; 30m intraday, 3m triggers).
+  - `chartchampions/notes/fibonacci.md` (11 lessons) — Champions Channel 0.618-0.66, pull rules, extension (corrective→1:1, impulsive→1.618), negative fib targets, fib time (corrections take longer), touch-count rule (3rd touch breaks), **TV fan labels differ from ATAS/pro by one step**, and the **0.25 Range Tool** quadrant rules (no longs 0.75-1.0, no shorts 0.25-0, 0.5 = stay out/TP).
+  - `chartchampions/notes/tpo-series.md` (16 lessons) — the deep market-profile module: six TPO rules, six day types, single prints / poor highs-lows + trapped-participant reads, ledges + double distribution, Rotation Factor, Eagle sessions/time (naked session POCs, 4 sessions/day), and an ES RTH replay (30-min volume thresholds >100/<50/<25, IB equilibrium/halfback, settlement rule, 2-tick OTF confirmation).
+  - `chartchampions/notes/futures-and-stocks.md` (18 lessons; 5 platform/stock lessons noted-not-transcribed) — ES contract specs (1 pt = $50, tick $12.50), AMT/value (70%), **Fair Value Gaps** (3-candle, stop at origin, 5/15m), NY-session profile playbook (session letters, IB = A+B, break-of-balance needs imbalance), profile shapes (D/P/b/squat), trend tools (MAs 8/24 SMA, 50 SMA, daily EMA 100/200), prop-firm logistics.
+  - `chartchampions/notes/advanced-strategies.md` (19 lessons; 3 crypto/walkthrough lessons noted-not-transcribed) — the strategy-dense module: Level 2/tape, If-1-Then-2, failed auctions, 3rd-touch, frontrun (92%/81%), order blocks (0.786), volume specifics (CVD only reliable in high liquidity), day-trading strategy, **CCTR = Candle Close Trend Reversal** (2-candle entry, ACR exits, BE after TP1), Wyckoff accumulation/distribution (incl. UTAD/MSOW stats), entry triggers (5 types), Sequence = **TD Sequential** (setup 1-9, countdown 1-13).
+  - `chartchampions/notes/statistics-and-journaling.md` (8 lessons) — edge = measurable repeatable pattern, 60-65% win rate, min 200 observations; **Severin's backtest framework** (static level vs playbook, exclude holidays/DST, NY open shifts 3:30↔2:30 CET, tracks the 3-candle COT/COC/momentum entry + 0.25 quartile tool); CCTR journal; Rivalry's tier system; correlations (DXY inverse to ES/NQ).
+- `playbook.md`, `indicator-backlog.md` and `README.md` updated to fold in the new rules and mark the modules done.
+- **2026-11-12: remaining 8 ★/☆ modules harvested too — all 18 modules now captured:**
+  - `chartchampions/notes/basic.md` (9), `channels-and-patterns.md` (13), `beginner-strategies.md` (9),
+    `intermediate-strategies.md` (13), `beginners.md` (6), `trading-psychology.md` (5),
+    `elliott-waves.md` (12), `quantower.md` (2). Notable rules added: Severin's Market Structure (3-pivot
+    confirmation, "where is the market trying to go / is it doing a good job"), the daily routine (wake
+    45-60m before London, mark levels), named CC setups (CCW fib ladder, CCSS Bollinger+EMA scalp, CCV =
+    the 80% value rule + CCV 2.0 fakeout, Daily Open 3 types, EMA 2.0, Opening Range Breakout for ES/NQ,
+    Fixed Range 2.0, SFP 2.0 stats, 50 SMA), harmonic patterns with exact ratios, supply/demand zones,
+    Elliott wave rules + fib relationships, and **DSF = Quantower's DOM Surface liquidity heatmap**
+    (resolves the long-open "DSF liquidity map" question; ATAS equivalent noted via the depth-snapshot
+    API + Heatmap, cross-linked to `atas-data-feasibility.md`).
+- `chartchampions/vault-manifest.md` (new) — full manifest of the Vault: 3 daily sheets, 19 templates,
+  71 cheat sheets. All of it was pulled to `~/Downloads/ChartChampions-Vault/`, sorted into
+  `atas-templates/` (6: Daniel's Daily Volume Profile `.cts`, Daniel's + Severin's + Igor's ATAS
+  workspaces, Fibonacci Settings, Statistics journal), `daily-sheets/` (3: ES/NQ/BTC) and
+  `cheat-sheets/` (all 71 PDFs). The cheat sheets duplicate lesson content already in `notes/`; pulled
+  anyway on Elroy's request. Vault files are not committed (binaries, Elroy's member material — they
+  live in his Downloads).
+- `indicator-backlog.md` reframed after design input from the CC | Indicators session: a header line
+  says items A-Q are candidate FEATURES of one signal indicator (not seventeen to build), and item P
+  (Elroy's "trending up / down" chart readout) is rewritten as **Level Trigger stage 2** — trend state
+  logged per level touch, scoreboard split with-trend / against-trend / range, starting from two
+  minimal rules (30-min one-time framing; ~60-70% of bars closing one way) with the rest as candidate
+  variables to test one at a time. Exact rules + numbers (one-time framing, Rotation Factor, six day
+  types vs IBH/IBL, ES 30-min volume thresholds, "How to Spot a Trend" MA/VWAP filters) relayed to that
+  session with `notes/` file:line references. No indicator code written here (one writer per file).
+- Captured 2026-11-11 and 2026-11-12. **18 of 18 modules harvested.** Subscription ends ~2026-11-19.
+
 ### Fixed: Level Sync userscript never fills the Pine Editor (v3.36)
 - `tradingview-sync/atas-levels.user.js`: the fill now hard-refuses TradingView's Pine Editor as a target, so a sync can no longer overwrite your Pine source. New `inPineEditor(el)` helper (matches `.monaco-editor`). `findInput()` skips any textarea inside a Monaco editor, and `fillTextarea()` returns early with a `fill REFUSED` trace line if it is ever handed one.
 - Why this is the real fix, not the handover's proposed `document.activeElement` guard: auto-apply already bails while you are typing in the editor, because `userIsTyping()` sees the focused textarea. The clobber happens when the Pine Editor is open but unfocused: a poll fires, the finder sees Monaco's visible textarea, and its surrounding text contains "ATAS Levels" (the Pine source itself), so it gets mistaken for the indicator's input. Excluding Monaco at the finder closes that path at the root.
