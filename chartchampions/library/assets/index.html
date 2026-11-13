@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ChartChampions — Knowledge Library</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<button id="menu-toggle" aria-label="Menu">☰</button>
+<div id="app">
+  <aside id="sidebar">
+    <div class="brand">
+      <div class="brand-mark">CC</div>
+      <div>
+        <div class="brand-title">Knowledge Library</div>
+        <div class="brand-sub">Severin's method · private study</div>
+      </div>
+    </div>
+    <div class="search-wrap">
+      <input id="search" type="search" placeholder="Search everything…" autocomplete="off" spellcheck="false">
+      <kbd>/</kbd>
+    </div>
+    <nav id="nav"></nav>
+    <div class="side-foot" id="side-foot"></div>
+  </aside>
+  <main id="content" tabindex="-1"></main>
+</div>
+
+<div id="lightbox" class="lb" hidden>
+  <div class="lb-bar">
+    <span id="lb-title" class="lb-title"></span>
+    <span class="lb-actions">
+      <a id="lb-open" href="#" target="_blank" rel="noopener">Open in new tab ↗</a>
+      <button id="lb-close" aria-label="Close">✕</button>
+    </span>
+  </div>
+  <iframe id="lb-frame" title="Cheat sheet" src="about:blank"></iframe>
+</div>
+
+<script src="marked.min.js"></script>
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

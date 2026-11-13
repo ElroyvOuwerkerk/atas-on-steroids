@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 660" role="img" aria-label="Severin daily decision flow">
+  <style>
+    .bg{fill:#0d1117}
+    .title{fill:#e6edf3;font:700 22px system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+    .sub{fill:#8b98a8;font:400 13px system-ui,sans-serif}
+    .box{fill:#161b22;stroke:#30363d;stroke-width:1.5;rx:12}
+    .num{fill:#4493f8;font:800 15px system-ui,sans-serif}
+    .h{fill:#e6edf3;font:700 16px system-ui,sans-serif}
+    .r{fill:#9fb0c3;font:400 13px system-ui,sans-serif}
+    .arrow{stroke:#4493f8;stroke-width:2;fill:none;marker-end:url(#a)}
+    .aside{fill:#2d1618;stroke:#f85149;stroke-width:1.5;rx:10}
+    .asideh{fill:#f85149;font:700 14px system-ui,sans-serif}
+    .asider{fill:#e0a8ab;font:400 12px system-ui,sans-serif}
+  </style>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#4493f8"/>
+    </marker>
+  </defs>
+  <rect class="bg" x="0" y="0" width="860" height="660"/>
+  <text class="title" x="40" y="40">Severin — daily decision flow</text>
+  <text class="sub" x="40" y="60">The order to run every session. Any step that fails sends you to STAND ASIDE.</text>
+
+  <!-- step boxes -->
+  <g>
+    <rect class="box" x="40" y="82" width="470" height="70" rx="12"/>
+    <text class="num" x="60" y="112">1</text>
+    <text class="h" x="86" y="110">PLAN</text>
+    <text class="r" x="86" y="132">Mark levels before London (pdH/L, VAH/VAL/POC, ON H/L, dOpen). Wake 45–60m early.</text>
+
+    <rect class="box" x="40" y="174" width="470" height="70" rx="12"/>
+    <text class="num" x="60" y="204">2</text>
+    <text class="h" x="86" y="202">BIAS</text>
+    <text class="r" x="86" y="224">HTF structure: HH/HL vs LH/LL. “Where is price trying to go — and doing a good job?”</text>
+
+    <rect class="box" x="40" y="266" width="470" height="70" rx="12"/>
+    <text class="num" x="60" y="296">3</text>
+    <text class="h" x="86" y="294">CONTEXT GATE</text>
+    <text class="r" x="86" y="316">Value area + profile + OI / delta must agree with the bias.</text>
+
+    <rect class="box" x="40" y="358" width="470" height="70" rx="12"/>
+    <text class="num" x="60" y="388">4</text>
+    <text class="h" x="86" y="386">TRIGGER (3-candle)</text>
+    <text class="r" x="86" y="408">COT (sweep + extreme-quartile close) → COC (breaks prior H/L) → Momentum (S/D break + retest).</text>
+
+    <rect class="box" x="40" y="450" width="470" height="70" rx="12"/>
+    <text class="num" x="60" y="480">5</text>
+    <text class="h" x="86" y="478">RISK</text>
+    <text class="r" x="86" y="500">&lt;1% risk, min 2:1 (pref 3:1). ES 12-tick stop → 20/25/30. Cut size after a loss streak.</text>
+
+    <rect class="box" x="40" y="542" width="470" height="70" rx="12"/>
+    <text class="num" x="60" y="572">6</text>
+    <text class="h" x="86" y="570">MANAGE</text>
+    <text class="r" x="86" y="592">Move the stop only when invalidation changes. TP ladder; break-even after TP1 (CCTR).</text>
+  </g>
+
+  <!-- connectors -->
+  <path class="arrow" d="M275 152 L275 172"/>
+  <path class="arrow" d="M275 244 L275 264"/>
+  <path class="arrow" d="M275 336 L275 356"/>
+  <path class="arrow" d="M275 428 L275 448"/>
+  <path class="arrow" d="M275 520 L275 540"/>
+
+  <!-- stand aside branch -->
+  <rect class="aside" x="560" y="266" width="260" height="92" rx="10"/>
+  <text class="asideh" x="580" y="294">STAND ASIDE</text>
+  <text class="asider" x="580" y="316">Context disagrees, no clean trigger,</text>
+  <text class="asider" x="580" y="334">or outside your hours (09:00–17:30).</text>
+  <text class="asider" x="580" y="352">No trade is a position.</text>
+  <path class="arrow" d="M510 301 L558 305"/>
+</svg>

@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 540" role="img" aria-label="Value area trading: VAH, POC, VAL rules">
+  <style>
+    .bg{fill:#0d1117}
+    .title{fill:#e6edf3;font:700 22px system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+    .sub{fill:#8b98a8;font:400 13px system-ui,sans-serif}
+    .bar{fill:#4493f8;opacity:0.85}
+    .barout{fill:#39414d}
+    .poc{fill:#d29922}
+    .lv{stroke-width:1.6;stroke-dasharray:6 5}
+    .lab{font:700 14px system-ui,sans-serif}
+    .labd{fill:#9fb0c3;font:400 12px system-ui,sans-serif}
+    .rh{fill:#e6edf3;font:700 15px system-ui,sans-serif}
+    .rr{fill:#9fb0c3;font:400 13px system-ui,sans-serif}
+    .dot{font:700 13px}
+  </style>
+  <rect class="bg" x="0" y="0" width="1000" height="540"/>
+  <text class="title" x="40" y="40">Value area — short the high, long the low, never the middle</text>
+  <text class="sub" x="40" y="60">The 70% volume value area. Edges are where you act; the POC is chop.</text>
+
+  <!-- profile bars (right-anchored at x=560) -->
+  <g>
+    <rect class="barout" x="530" y="96"  width="30"  height="14"/>
+    <rect class="barout" x="515" y="112" width="45"  height="14"/>
+    <rect class="bar"    x="490" y="128" width="70"  height="14"/>
+    <rect class="bar"    x="465" y="144" width="95"  height="14"/>
+    <rect class="bar"    x="430" y="160" width="130" height="14"/>
+    <rect class="bar"    x="390" y="176" width="170" height="14"/>
+    <rect class="bar"    x="350" y="192" width="210" height="14"/>
+    <rect class="bar"    x="315" y="208" width="245" height="14"/>
+    <rect class="bar"    x="290" y="224" width="270" height="14"/>
+    <rect class="poc"    x="270" y="240" width="290" height="14"/>
+    <rect class="bar"    x="295" y="256" width="265" height="14"/>
+    <rect class="bar"    x="335" y="272" width="225" height="14"/>
+    <rect class="bar"    x="375" y="288" width="185" height="14"/>
+    <rect class="bar"    x="420" y="304" width="140" height="14"/>
+    <rect class="bar"    x="465" y="320" width="95"  height="14"/>
+    <rect class="bar"    x="490" y="336" width="70"  height="14"/>
+    <rect class="barout" x="515" y="352" width="45"  height="14"/>
+    <rect class="barout" x="530" y="368" width="30"  height="14"/>
+  </g>
+
+  <!-- key level lines -->
+  <line class="lv" x1="150" y1="135" x2="610" y2="135" stroke="#f85149"/>
+  <line class="lv" x1="150" y1="247" x2="610" y2="247" stroke="#d29922"/>
+  <line class="lv" x1="150" y1="343" x2="610" y2="343" stroke="#3fb950"/>
+
+  <text class="lab" x="146" y="131" text-anchor="end" fill="#f85149">VAH</text>
+  <text class="lab" x="146" y="251" text-anchor="end" fill="#d29922">POC</text>
+  <text class="lab" x="146" y="347" text-anchor="end" fill="#3fb950">VAL</text>
+
+  <!-- rules -->
+  <text class="rh" x="636" y="122" fill="#f85149">● Short the VAH</text>
+  <text class="rr" x="636" y="142">Resistance while ranging. Fade back toward POC.</text>
+
+  <text class="rh" x="636" y="240" fill="#d29922">● Never trade at POC</text>
+  <text class="rr" x="636" y="260">Fairest price = chop. It's a target, not an entry.</text>
+
+  <text class="rh" x="636" y="336" fill="#3fb950">● Long the VAL</text>
+  <text class="rr" x="636" y="356">Support while ranging. Fade back toward POC.</text>
+
+  <text class="rh" x="40" y="440">Naked POC</text>
+  <text class="rr" x="40" y="460">A prior-session POC not yet tapped bounces on the first touch — with confluence.</text>
+  <text class="rh" x="40" y="492">CCV 80% rule</text>
+  <text class="rr" x="40" y="512">Open outside yesterday's value, then accepted back in (2× 30-min closes) → ~80% to tag the opposite VAL/VAH.</text>
+</svg>

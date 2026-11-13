@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 560" role="img" aria-label="Three-candle entry: COT, COC, Momentum (long example)">
+  <style>
+    .bg{fill:#0d1117}
+    .title{fill:#e6edf3;font:700 22px system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+    .sub{fill:#8b98a8;font:400 13px system-ui,sans-serif}
+    .lvl{stroke:#8b98a8;stroke-width:1.3;stroke-dasharray:6 5}
+    .lvllab{fill:#8b98a8;font:600 12px system-ui,sans-serif}
+    .bull{fill:#3fb950}
+    .bear{fill:#f85149}
+    .wickg{stroke:#3fb950;stroke-width:2}
+    .wickr{stroke:#f85149;stroke-width:2}
+    .tag{fill:#e6edf3;font:700 13px system-ui,sans-serif}
+    .tagd{fill:#9fb0c3;font:400 12px system-ui,sans-serif}
+    .acc{stroke:#4493f8;stroke-width:2;fill:none;marker-end:url(#ar)}
+    .accf{fill:#4493f8;font:700 12px system-ui,sans-serif}
+    .q{fill:#d29922;opacity:0.18}
+    .qlab{fill:#d29922;font:600 11px system-ui,sans-serif}
+    .stop{stroke:#f85149;stroke-width:1.3;stroke-dasharray:3 4}
+  </style>
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#4493f8"/>
+    </marker>
+  </defs>
+  <rect class="bg" x="0" y="0" width="900" height="560"/>
+  <text class="title" x="40" y="40">3-candle entry — COT → COC → Momentum (long)</text>
+  <text class="sub" x="40" y="60">Severin's near-mechanical trigger. Mirror everything for a short.</text>
+
+  <!-- levels -->
+  <line class="lvl" x1="60" y1="398" x2="620" y2="398"/>
+  <text class="lvllab" x="64" y="414">prior swing low = resting liquidity</text>
+  <line class="lvl" x1="360" y1="250" x2="840" y2="250"/>
+  <text class="lvllab" x="690" y="244">supply / demand level</text>
+
+  <!-- context candles (downtrend into the low) -->
+  <line class="wickr" x1="110" y1="300" x2="110" y2="352"/><rect class="bear" x="98" y="312" width="24" height="30"/>
+  <line class="wickr" x1="180" y1="320" x2="180" y2="378"/><rect class="bear" x="168" y="332" width="24" height="34"/>
+  <line class="wickr" x1="250" y1="338" x2="250" y2="392"/><rect class="bear" x="238" y="350" width="24" height="30"/>
+
+  <!-- COT candle: sweep below low, close in top quartile -->
+  <line class="wickg" x1="330" y1="300" x2="330" y2="430"/><rect class="bull" x="316" y="302" width="28" height="26"/>
+  <rect class="q" x="310" y="300" width="40" height="33"/>
+  <text class="qlab" x="354" y="312">top ¼</text>
+
+  <!-- COC candle: closes above prior candle high -->
+  <line class="wickg" x1="410" y1="246" x2="410" y2="308"/><rect class="bull" x="396" y="252" width="28" height="48"/>
+
+  <!-- Momentum candle: breaks S/D then retest -->
+  <line class="wickg" x1="490" y1="206" x2="490" y2="262"/><rect class="bull" x="476" y="212" width="28" height="40"/>
+  <!-- retest candle -->
+  <line class="wickg" x1="560" y1="212" x2="560" y2="258"/><rect class="bull" x="548" y="226" width="24" height="24"/>
+
+  <!-- annotations with leader lines -->
+  <path class="acc" style="marker-end:url(#ar)" d="M330 452 L330 436" fill="none"/>
+  <text class="tag" x="300" y="478">COT</text>
+  <text class="tagd" x="246" y="496">sweeps the low +</text>
+  <text class="tagd" x="246" y="512">closes in the extreme ¼</text>
+
+  <text class="tag" x="396" y="336">COC</text>
+  <text class="tagd" x="366" y="354">closes above the</text>
+  <text class="tagd" x="366" y="370">prior candle's high →</text>
+  <text class="tagd" x="366" y="386">context has flipped</text>
+
+  <text class="tag" x="472" y="150">Momentum</text>
+  <text class="tagd" x="452" y="168">clean S/D break,</text>
+  <text class="tagd" x="452" y="184">enter the retest,</text>
+  <text class="tagd" x="452" y="200">tight stop on retest candle</text>
+
+  <!-- entry / stop / target -->
+  <line class="stop" x1="520" y1="430" x2="840" y2="430"/>
+  <text class="lvllab" x="760" y="446" fill="#f85149">stop (below sweep)</text>
+  <path class="acc" d="M600 250 L600 150"/>
+  <text class="accf" x="610" y="150">target (2–3R)</text>
+  <circle cx="560" cy="250" r="5" fill="#4493f8"/>
+  <text class="accf" x="574" y="278">entry on retest</text>
+</svg>

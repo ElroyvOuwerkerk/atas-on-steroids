@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 560" role="img" aria-label="0.25 range tool quadrant rules">
+  <style>
+    .bg{fill:#0d1117}
+    .title{fill:#e6edf3;font:700 22px system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+    .sub{fill:#8b98a8;font:400 13px system-ui,sans-serif}
+    .fib{fill:#c9d4e0;font:600 13px system-ui,sans-serif}
+    .qh{font:700 15px system-ui,sans-serif}
+    .qr{fill:#9fb0c3;font:400 13px system-ui,sans-serif}
+    .mid{stroke:#d29922;stroke-width:2.5}
+    .midlab{fill:#d29922;font:700 13px system-ui,sans-serif}
+    .frame{fill:none;stroke:#30363d;stroke-width:1.5}
+    .grid{stroke:#30363d;stroke-width:1;stroke-dasharray:4 4}
+  </style>
+  <rect class="bg" x="0" y="0" width="820" height="560"/>
+  <text class="title" x="40" y="40">0.25 Range Tool — where you're allowed to trade</text>
+  <text class="sub" x="40" y="60">Split any range into quarters. The extreme quarter blocks trades against the move; 0.5 is no-man's-land.</text>
+
+  <!-- quadrant fills -->
+  <rect x="150" y="90"  width="210" height="95" fill="#f85149" opacity="0.26"/>
+  <rect x="150" y="185" width="210" height="95" fill="#f85149" opacity="0.13"/>
+  <rect x="150" y="280" width="210" height="95" fill="#3fb950" opacity="0.13"/>
+  <rect x="150" y="375" width="210" height="95" fill="#3fb950" opacity="0.26"/>
+  <rect class="frame" x="150" y="90" width="210" height="380"/>
+
+  <!-- grid + fib labels -->
+  <line class="grid" x1="150" y1="185" x2="360" y2="185"/>
+  <line class="mid"  x1="150" y1="280" x2="360" y2="280"/>
+  <line class="grid" x1="150" y1="375" x2="360" y2="375"/>
+  <text class="fib" x="108" y="95" text-anchor="end">1.00</text>
+  <text class="fib" x="108" y="190" text-anchor="end">0.75</text>
+  <text class="fib" x="108" y="285" text-anchor="end">0.50</text>
+  <text class="fib" x="108" y="380" text-anchor="end">0.25</text>
+  <text class="fib" x="108" y="474" text-anchor="end">0.00</text>
+  <text class="midlab" x="364" y="276">0.5 → stay out / take profit</text>
+
+  <!-- quadrant rules -->
+  <text class="qh" x="388" y="128" fill="#f85149">0.75 – 1.00 · no longs</text>
+  <text class="qr" x="388" y="148">Price extended up. Only fade the high (shorts).</text>
+
+  <text class="qh" x="388" y="212" fill="#e0867f">0.50 – 0.75 · short bias</text>
+  <text class="qr" x="388" y="232">Favour shorts back toward value.</text>
+
+  <text class="qh" x="388" y="316" fill="#73c088">0.25 – 0.50 · long bias</text>
+  <text class="qr" x="388" y="336">Favour longs back toward value.</text>
+
+  <text class="qh" x="388" y="410" fill="#3fb950">0.00 – 0.25 · no shorts</text>
+  <text class="qr" x="388" y="430">Price extended down. Only fade the low (longs).</text>
+
+  <text class="sub" x="40" y="508">Rule of thumb: never chase the extreme quarter in the direction it already ran — that's where the move is oldest.</text>
+  <text class="sub" x="40" y="528">TV fib-fan labels are offset one step from ATAS/pro tools — verify the numbers, don't trust the label.</text>
+</svg>
