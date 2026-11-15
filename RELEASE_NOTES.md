@@ -10,6 +10,13 @@ Format: reverse-chronological. Newest entries at the top.
 
 Work currently in progress on the working tree (not yet committed).
 
+### Changed: decisions in his own words, and look it up before asking (2026-11-15)
+- `CLAUDE.md`: a continuity section. Before asking Elroy anything or proposing or building anything, a session
+  searches what is written; a decision or view he states goes into `docs/decisions.md` in his own words.
+- `docs/decisions.md` (new): loads on every turn through an import in `CLAUDE.md`.
+- Why: Elroy, 15 November: "Ik moet constant dingen opnieuw vermelden." The same change went into every
+  project and both LROY-BV templates.
+
 ### Added: ChartChampions study notes (`chartchampions/`) — Severin strategy playbook
 - New `chartchampions/` knowledge base distilling Severin's method from the CC member portal (each portal lesson ships a written summary + timestamped highlights next to the video; these condense that into the concrete rules, for later review and for building indicators). Private study notes, not a copy of the videos.
 - `chartchampions/README.md` — index, scope/legal note, and a capture tracker for all 18 course modules (priority-ranked) plus the Speed Run / Glossary / Vault sections.

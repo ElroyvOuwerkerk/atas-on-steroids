@@ -33,6 +33,20 @@ on every turn, so it stays short; detail lives in the READMEs and in `RELEASE_NO
 5. **Commit to `main` and push only when he asks,** and stage explicit paths. Build output (`bin/`, `obj/`) and
    the journal database never go in git: the database holds his real trades.
 
+## Continuity: look it up first, keep his decisions in his words
+
+Every session must be able to carry on where the last one stopped, without Elroy repeating himself.
+
+- **Look it up before you ask.** Before you ask him anything, or propose, design or build anything,
+  search what is already written: `docs/decisions.md`, `docs/`, `ROADMAP.md` and the release log.
+  Ask only what is not written down, and say where you looked.
+- **His decisions in his own words.** When he decides something or states a view, add it to
+  `docs/decisions.md` in the same turn: the date, his words verbatim, what it means here and what
+  it does not mean. Never turn his words into a stronger claim. The release log stays the history;
+  private memory only points to this file.
+
+@docs/decisions.md
+
 ## ATAS facts that cost time to learn
 
 - **Deploy:** build Release, then
