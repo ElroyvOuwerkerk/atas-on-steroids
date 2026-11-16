@@ -13,6 +13,12 @@ This is the deep pass. It draws on the full set of Severin material captured in 
 - the five `../transcripts/live-trading/severin-live-trading-*` sessions
 - the seventeen Severin daily updates in `../transcripts/daily-update/daily-update-*` (19-10 to 13-11)
 - the seven Severin BTC updates `../transcripts/daily-update/daily-update-btc-*`
+- the ten Severin lessons in the Building Plans & Context course
+  (`../transcripts/courses/building-plans-and-context/`): Trading Bias 1-2, Context-Volume-Tips, the
+  Scalping Strategy series (overview, daily plan, execution), the 3 Candle Entry plus two refinements,
+  and How/when to modify your plan. These lessons are the systematic foundation (sections 14-18 below);
+  the 30-day application above shows how he uses it. The three Traders Checklist lessons in that course
+  are Daniel's, not Severin's, and are in `daniel.md`.
 
 Timestamps reference each file's `## Transcript` and the portal's own Highlights index. Igor's four
 dailies are synthesized separately in `igor.md`; the stocks Contender lesson is Daniel's and is in
@@ -327,8 +333,124 @@ These line up with the backlog in `../indicator-backlog.md`. The concrete pieces
 beyond the first pass are the confluence-level engine, the washed-level decay score, the
 line-in-the-sand marker, the range-quartile guard, and the P/B-shape classifier.
 
+## 14. The systematic foundation: trading bias (course)
+
+From Trading Bias Part 1-2. The mechanical read underneath the discretionary "context first".
+
+- A price bar's four components carry the read: a close far from the open is conviction, a close near
+  the open is indecision, an open far from the prior close is a gap and unfinished business
+  (Trading Bias Part 1 [03:07]).
+- The prev-day high/low rule, stated as a hard line: never long above a previous day high, never short
+  below a previous day low. Those levels are where he takes profit with limit orders and where stops
+  sit (Trading Bias Part 1 [06:10]).
+- Bias holds with the trend until a key fractal swing (two swings back) breaks; only then does it flip
+  (Trading Bias Part 1 [02:19]). Trend is confirmed while 60-70 percent of bars close in the direction
+  (Trading Bias Part 1 [44:00]).
+- Williams fractals: a bullish fractal is a low with two higher-low bars each side; entry at the open
+  of the third bar after the arrow prints (Trading Bias Part 1 [22:12]). He trades fractal breaks in
+  the trend direction at a key level, so key level plus fractal break plus market-structure shift is
+  the setup (Trading Bias Part 1 [25:00]).
+- Liquidity grab versus trend shift: a quick wick to a prior-day low that closes back inside is bullish
+  liquidity collection, not a bearish shift; the first real break of a prev-day low in a bullish run is
+  only a first sign of weakness, and he waits for a retrace to the 0.618-0.66 CC zone before shorting
+  (Trading Bias Part 1 [07:48], [16:49], [28:00]).
+- Take-profit split 34/33/33, compounding with slightly less than the realized profit
+  (Trading Bias Part 2 [01:08:48]). In crypto a bar's open equals the prior close (no gaps), unlike
+  stocks and forex (Trading Bias Part 2 [01:20:44]).
+
+## 15. The scalping strategy: workspace and three entry types (course)
+
+From the Severin Scalping Strategy series (overview, daily plan, execution). This is the order-flow
+execution layer, and the daily update in section 2 is this plan run live.
+
+- Workspace: a customized ExoCharts (order-flow) grid split into context (volume profile, TPO, session
+  POCs, single prints) and execution (5-minute order flow, delta ladder, footprint, a CCTR template),
+  per asset (ES and NQ). It needs a DXFeed CME feed (Scalping Strategy [01:58], [03:27]). He reads
+  reactions to levels rather than pre-setting them (Scalping Strategy [00:48]).
+- Three entry types (Scalping Execution [02:25]):
+  - Aggressive: an SFP or first touch of a key level, confirmed by order flow (a sell block holding as
+    support, a CCTR signal) (Scalping Execution [06:19], [10:33]).
+  - Reclaim or loss (of orders and of levels): buy/sell blocks are the reference; enter on a loss of a
+    buy block, or a reclaim of a level with positive delta followed by a backtest
+    (Scalping Execution [15:06], [19:04]).
+  - Backtest or retest: after an impulsive move or heavy volume at a reference (single print, VWAP,
+    POC), comparing delta into the move versus on the retest (Scalping Execution [25:40]).
+- Risk rules (Scalping Execution [03:07]): risk per trade under 1 percent of the account; minimum 2:1
+  reward-to-risk; halve size after two consecutive losses; pause after three losing trades.
+- Take-profit ladders, context-dependent (Scalping Execution [04:01], [05:26]): ES a 12-tick stop with
+  TP 20/25/30 ticks; NQ a 26-tick stop with TP 40/50/60. Allocation 50/25/25 with trend, 75/15/10
+  against trend. Manage by scaling out, moving the stop to break-even, treating levels as zones, and
+  exiting promptly if signals conflict after TP1 (Scalping Execution [45:00], [50:51]).
+- The daily plan is five steps (Formulating a Daily Plan [00:35] on): read market structure from the
+  daily highs/lows indicator; read the daily open versus the previous day's range; read it versus the
+  previous day's value area; update higher-timeframe levels (prev month/week/day opens, SFPs, CC
+  support/resistance, value areas); build the final plan in ExoCharts around untested values that
+  coincide with liquidity grabs, with both long and short scenarios.
+
+## 16. The 3 candle entry and its refinements (course)
+
+From the 3 Candle Entry Strategy plus refinements 1-2. This is the exact trigger the 30-day sessions
+call "the three-candle method", given in full.
+
+- Base pattern: candle 1 arrival (reaches the level), candle 2 reversal (the confirmation, never a
+  Fibonacci level), candle 3 entry (Refinement 1 [01:58]). Built for a clear yes/no; inside candles
+  (trading entirely within the prior candle's range) are the low-conviction case to skip
+  (Refinement 1 [05:01]).
+- The three refined types, in priority order (Refinement 1 [01:26]; Refinement 2 [01:41]):
+  - Cherry on Top (COT), highest probability: the reversal candle takes the prior candle's liquidity
+    and closes in the extreme quartile (upper for a long, lower for a short). His statistic: an
+    extreme-quartile close gives an 88 percent chance of follow-through on the next candle
+    (Refinement 1 [06:02]).
+  - Change of Context (COC): the reversal takes out the prior candle's high (long) or low (short),
+    changing the 1-minute context; it combines with COT for the highest conviction (Refinement 1 [09:18]).
+  - Momentum: when no COT or COC is available. A break of a valid supply/demand zone (three or more
+    touches) with an extreme-quartile close, entered on the retest of the next candle, with a local
+    stop just beyond it. Trapped traders fuel the move, which enables 10:1 or higher
+    (Refinement 2 [05:46], [09:05], [13:42]).
+- Draw supply/demand boxes to include the most wicks while staying as small as possible
+  (Refinement 2 [09:49]). Compound by taking the COT or COC entry, then adding on a momentum break for
+  a better average (Refinement 2 [14:06]). The mindset he repeats: "I am not convincing the market to
+  take a trade. The market has to convince me to take a trade" (Refinement 1 [14:14]). Do not mix entry
+  methods, and accept missed trades (Refinement 1 [15:57]).
+
+## 17. When to modify the plan (course)
+
+From How and when to modify your trading plan. Step away from the plan when behavior is unexpected,
+when invalidations have become too extreme, when the plan and correlations disagree, or around a major
+event (CPI, FOMC, NFP), waiting for structure afterward (Modify Plan [01:53], [04:17]). The decision
+must be data-driven, not emotional (ego, confirmation bias, or revenge trading disguised as following
+the plan). To adjust: update the levels and test their validity, re-evaluate invalidations, reduce
+size and wait for confirmation. "There are three types of trades: long, short, and no trade"
+(Modify Plan [05:20], [06:07]).
+
+## 18. How the foundation maps to an indicator
+
+The course method is more mechanical than the 30-day application, so more of it is directly codeable,
+which is the point for the LevelTrigger / scoreboard work.
+
+- The 3-candle trigger is fully specified: arrival, reversal, entry; COT (a liquidity take plus an
+  extreme-quartile close, the 88 percent stat), COC (takes the prior candle's high/low), and Momentum
+  (a zone break with three-plus touches plus an extreme-quartile close plus a retest). An indicator can
+  classify each candle and fire COT/COC/Momentum with the quartile statistic attached
+  (Refinement 1 [06:02]; Refinement 2 [09:05]). This is the single most codeable piece in all the
+  Severin material.
+- Prev-day-high/low guard: block longs above the prior day high and shorts below the prior day low, and
+  mark them as the limit-TP and stop lines (Trading Bias Part 1 [06:10]).
+- Williams-fractal entries at a key level, entering at the open of the third bar after the arrow
+  (Trading Bias Part 1 [22:12]).
+- A buy/sell-block reference engine for the reclaim/loss entry (Scalping Execution [15:06]).
+- A risk governor: enforce under-1-percent risk, 2:1 minimum, halve size after two losses, lock out
+  after three (Scalping Execution [03:07]); plus the TP ladders and the with/against-trend allocation
+  (Scalping Execution [04:01]).
+
 ## Open items
 
+- The Building Plans & Context course was captured in full (13 lessons). Attribution was checked per
+  lesson from the transcripts, not assumed: ten are Severin's (Trading Bias 1-2, Context-Volume-Tips,
+  the Scalping and 3-Candle series, Modify Plan), and the three Traders Checklist lessons are
+  **Daniel's** (he self-identifies "this is Daniel" and introduces Igor; the audience addresses him as
+  Daniel). Those three are in `daniel.md`, not here. Trading Bias Part 1 carries no self-ID and is
+  attributed to Severin by pairing with Part 2 (which refers to Daniel in the third person).
 - `making-the-move-to-stocks` is Daniel's, not Severin's (Elroy confirmed 2026-11-16: the "Daniel"
   greeting in the Q&A was Daniel reading aloud a question addressed to him). It is synthesized in
   `daniel.md`; section 9's investment framework here stands on Severin's own dailies and streams, not

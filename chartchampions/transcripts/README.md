@@ -12,9 +12,10 @@ assembled in-page, copied to the clipboard, written to disk, nothing uploaded, b
 verified against the page.
 
 Scope captured: the 3 Contender lessons, Severin's 5 live-trading streams, his 17 daily updates,
-his 5 Champions live streams, and his 7 BTC daily updates, plus Igor's 4 daily updates (his
-market-profile/DSF lesson is one of the 3 Contender lessons). 41 transcripts in all. The synthesis
-per champ is in `../learnings/` (`severin.md`, `igor.md`, `daniel.md`).
+his 5 Champions live streams, his 7 BTC daily updates, Igor's 4 daily updates, and the full
+**Building Plans & Context** course (15 lessons: 13 under `courses/`, plus its DSF and Context Mastery
+lessons already filed under `contender-sessions/`). 54 transcripts in all. The synthesis per champ is
+in `../learnings/` (`severin.md`, `igor.md`, `daniel.md`).
 
 ## Contender sessions (`contender-sessions/`)
 
@@ -78,6 +79,46 @@ Over the last 30 days (2026-10-19 to 2026-11-16) there are 21 regular daily upda
 - **Severin BTC dailies (7):** 20-10, 22-10, 27-10, 29-10, 03-11, 10-11, 12-11.
 
 Lengths run 18 min to 2h05; word counts 3k to 19k.
+
+## Courses (`courses/`)
+
+Evergreen course lessons (no 30-day window), same transcript format as the rest.
+
+### Building Plans & Context (`courses/building-plans-and-context/`)
+
+Severin's systematic-method course. 15 lessons in all: the 13 here, plus lesson 14 (DSF and Market
+Profile, Igor) and lesson 15 (Context Mastery, Severin) already filed under `contender-sessions/`.
+Attribution was checked per lesson from the transcripts, not assumed:
+
+| # | File | Champ | Words | Duration |
+|---|---|---|---|---|
+| 1 | `01-trading-bias-part-1` | Severin | 7,947 | 47:03 |
+| 2 | `02-trading-bias-part-2` | Severin | 14,883 | 1:29:23 |
+| 3 | `03-traders-checklist-part1` | **Daniel** | 15,412 | 1:21:17 |
+| 4 | `04-traders-checklist-part2` | **Daniel** | 11,521 | 1:05:10 |
+| 5 | `05-traders-checklist-live` | **Daniel** | 11,470 | 1:02:49 |
+| 6 | `06-context-volume-tips` | Severin | 10,296 | 59:51 |
+| 7 | `07-severin-scalping-strategy` | Severin | 1,195 | 9:44 |
+| 8 | `08-...-formulating-daily-plan` | Severin | 2,714 | 25:25 |
+| 9 | `09-...-execution` | Severin | 7,017 | 53:20 |
+| 10 | `10-severin-3-candle-entry-strategy` | Severin | 3,225 | 20:48 |
+| 11 | `11-...-refinement-part1` | Severin | 2,713 | 17:41 |
+| 12 | `12-...-refinement-part2` | Severin | 2,828 | 17:22 |
+| 13 | `13-when-to-adjust-the-trading` | Severin | 1,400 | 8:45 |
+
+The course split is **10 Severin + 3 Daniel** (the Traders Checklist series). The parent session
+assumed all 13 were Severin; the transcripts show the checklist series is Daniel's (he self-identifies
+"this is Daniel" in Part 1 and introduces Igor; the audience addresses him as Daniel in Part 2 and
+Live). Trading Bias Part 1 has no self-ID and is attributed to Severin by pairing with Part 2.
+
+All captured in English. These lessons carry multiple subtitle tracks (including Spanish); the English
+track is selected explicitly and coverage is checked against the video duration.
+
+Not yet captured (later round): the other 17 course modules in `/courses` (Beginners, Basic, Entering
+Trades, Trading Psychology, Indicators and Tools, Fibonacci, Channels and Patterns, Beginner and
+Intermediate Strategies, Orderflow and Footprint, Atas, Quantower, TPO Series, Futures and Stocks,
+Statistics/Journaling, and two more). These are general multi-coach modules; the lesson pages do not
+label the presenter, so pulling any further Severin/Igor/Daniel lessons needs a per-lesson voice audit.
 
 ## How this feeds the learnings
 

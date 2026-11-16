@@ -1,14 +1,52 @@
 # Daniel's method, from the transcript
 
-A synthesis of Daniel's "crypto to stocks" approach, built from the one captured lesson. Every claim
-links to a timestamp. Quotation marks mark his own words; everything else is paraphrase.
+A synthesis of Daniel's method, built from the captured lessons. Every claim links to a timestamp.
+Quotation marks mark his own words; everything else is paraphrase. Two bodies of Daniel material are
+captured: his crypto-to-stocks investing lesson, and his day-trading Traders Checklist series.
 
-Source: `../transcripts/contender-sessions/making-the-move-to-stocks.md` (46:49).
+Sources:
+- `../transcripts/contender-sessions/making-the-move-to-stocks.md` (46:49), the investing lesson.
+- the three Traders Checklist lessons in the Building Plans & Context course
+  (`../transcripts/courses/building-plans-and-context/03..05`): Part 1, Part 2, and Live.
 
-Attribution: Elroy confirmed on 2026-11-16 that this is Daniel. The "Daniel" greeting in the Q&A is
-Daniel reading aloud a question addressed to him, not a greeting to someone else. He is a crypto-roots
-trader who covers moving into stocks for long-term, high-conviction investing. Only this single lesson
-is captured, so this is a one-source read, not a pattern across sessions.
+Attribution: the stocks lesson is Daniel (Elroy confirmed 2026-11-16; the "Daniel" greeting in the Q&A
+is Daniel reading aloud a question addressed to him). The Traders Checklist lessons are Daniel's by his
+own words: in Part 1 he says "this is Daniel" and introduces Igor as a new coach; in Part 2 and Live
+the audience addresses him as "Daniel". They sit in the Building Plans & Context course next to
+Severin's lessons, which is why they were first assumed to be Severin's; the transcripts show otherwise.
+
+## The Traders Checklist: his day-trading method
+
+From the three Traders Checklist lessons (Part 1, Part 2, Live). This is Daniel's top-down day-trading
+process, distinct from the investing lesson below.
+
+- Start on the higher timeframes and work down. Begin on the monthly or weekly to set a directional
+  bias, then drop to lower timeframes only for entry triggers (Part 1 [04:04], [25:31]).
+- Higher-timeframe checklist questions: what is the weekly trend, where are support and resistance, is
+  this a trend or a range, and which side (bulls or bears) is in control (Part 1 [05:08], [23:24]). The
+  framing he repeats: "where is the market trying to go, and is it doing a good job of getting there?"
+  (Part 1 [18:04]).
+- Confirm trend strength with order flow: volume, delta and open interest (Part 1 [06:49]). Spot
+  trapped traders from a large open-interest increase followed by a reversal, ideally with a CVD
+  divergence (Part 1 [13:46]). Read location within the range using the fixed-range tool and value
+  areas (Part 1 [10:11]), and account for retail sentiment and the obvious patterns retail is trading
+  (Part 1 [20:46]).
+- Timeframe tiers: 1-hour and below is low, 4-hour is medium, above 4-hour is high (Part 2 [02:48]).
+  Mark where price can move quickly, through a triple top or a run of single prints that lack
+  high-volume nodes (Part 2 [20:41]).
+- Once the high-probability location is set, drop to 4-hour through 15-minute for the entry trigger,
+  for example a bullish CVD divergence and trapped shorts at a key support (Part 1 [25:31];
+  Part 2 [45:50]). Plan the re-entry if stopped out, or the compound-on-strength, before entering, and
+  separate being right on the idea from getting stopped out of a trade (Part 2 [23:32], [29:19]).
+- Once in, stick to the plan (Part 1 [26:42]), and journal every trade (Part 1 [47:47]). He leans on
+  what will destroy the majority of traders plus intuition on top of the technicals (Part 1 [30:29]).
+- The Live lesson applies the whole checklist to Polkadot (DOT/BTC and DOT/USDT) and stresses analyzing
+  Bitcoin before any altcoin, and the difference between spot and leverage (Traders Checklist Live
+  [48:48], [52:53]). Downloadable Trade Entry Checklist cheat sheets are in the portal Vault.
+
+This top-down, order-flow-confirmed checklist is close in spirit to Severin's and Igor's reads
+(higher-timeframe first, value areas, CVD and open interest, trapped traders), which is expected given
+they share a desk; the difference is emphasis, with Daniel framing it as an explicit repeatable checklist.
 
 ## 1. The idea: pivot from crypto into stocks
 
