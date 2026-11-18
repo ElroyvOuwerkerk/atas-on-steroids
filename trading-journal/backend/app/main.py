@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import engine
 from app.models import Base
-from app.routes import clips, levels, stats, trades
+from app.routes import clips, levels, review, stats, trades, trades_v2
 
 
 @asynccontextmanager
@@ -28,3 +28,5 @@ app.include_router(trades.router)
 app.include_router(stats.router)
 app.include_router(clips.router)
 app.include_router(levels.router)
+app.include_router(trades_v2.router)
+app.include_router(review.router)

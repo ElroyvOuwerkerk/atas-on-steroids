@@ -2,6 +2,10 @@ import { Routes, Route, NavLink, Navigate } from "react-router-dom";
 import Trades from "./pages/Trades";
 import TradeView from "./pages/TradeView";
 import Stats from "./pages/Stats";
+import JournalV2 from "./pages/JournalV2";
+import NewTrade from "./pages/NewTrade";
+import EditTradeV2 from "./pages/EditTradeV2";
+import Review from "./pages/Review";
 
 function NavTab({ to, children }: { to: string; children: React.ReactNode }) {
   return (
@@ -28,14 +32,20 @@ export default function App() {
         <span className="text-sm font-semibold text-zinc-200 mr-4">
           Trading Journal
         </span>
-        <NavTab to="/trades">Trades</NavTab>
+        <NavTab to="/journal">Journal</NavTab>
+        <NavTab to="/review">Review</NavTab>
+        <NavTab to="/trades">Auto-log</NavTab>
         <NavTab to="/stats">Stats</NavTab>
       </nav>
 
       {/* Page content */}
       <main className="max-w-5xl mx-auto px-6 py-6">
         <Routes>
-          <Route path="/" element={<Navigate to="/trades" replace />} />
+          <Route path="/" element={<Navigate to="/journal" replace />} />
+          <Route path="/journal" element={<JournalV2 />} />
+          <Route path="/journal/new" element={<NewTrade />} />
+          <Route path="/journal/:id" element={<EditTradeV2 />} />
+          <Route path="/review" element={<Review />} />
           <Route path="/trades" element={<Trades />} />
           <Route path="/trades/:id" element={<TradeView />} />
           <Route path="/stats" element={<Stats />} />
