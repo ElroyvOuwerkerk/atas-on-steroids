@@ -13,3 +13,6 @@ trading-journal/plugin/obj/
 
 # Trading journal database: his real trades, personal data
 trading-journal/backend/*.db
+
+# ChartChampions Vault downloads (large member PDFs, not for redistribution)
+chartchampions/vault-assets/

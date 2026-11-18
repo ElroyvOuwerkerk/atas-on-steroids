@@ -12,10 +12,11 @@ assembled in-page, copied to the clipboard, written to disk, nothing uploaded, b
 verified against the page.
 
 Scope captured: the 3 Contender lessons, Severin's 5 live-trading streams, his 17 daily updates,
-his 5 Champions live streams, his 7 BTC daily updates, Igor's 4 daily updates, and the full
-**Building Plans & Context** course (15 lessons: 13 under `courses/`, plus its DSF and Context Mastery
-lessons already filed under `contender-sessions/`). 54 transcripts in all. The synthesis per champ is
-in `../learnings/` (`severin.md`, `igor.md`, `daniel.md`).
+his 5 Champions live streams, his 7 BTC daily updates, Igor's 4 daily updates, the full
+**18-folder `/courses` library** (187 lesson files, the Building Plans & Context course among them),
+and the 5-part **Investing and Diversifying** series. **233 transcripts in all.** The synthesis per
+champ is in `../learnings/` (`severin.md`, `igor.md`, `daniel.md`); the investing pillar is in
+`../learnings/investing.md`.
 
 ## Contender sessions (`contender-sessions/`)
 
@@ -41,8 +42,9 @@ The weekly Champions live stream, hosted by Severin (confirmed by his opening ri
 Champions 383 (≈12-10) falls outside the 30-day window. All five have a captions track that loads in
 full and spans the whole video (coverage checked: last cue ≈ video end).
 
-## Live trading (`live-trading/`) — all Severin (named in slug)
+## Live trading (`live-trading/`) — Severin (5) + Igor (10), named in slug
 
+### Severin (5)
 | File | Words | Duration | Notes |
 |---|---|---|---|
 | `severin-live-trading-06-11-2026.md` | 10,651 | 2:44:17 | Richest. Full live session. |
@@ -52,7 +54,15 @@ full and spans the whole video (coverage checked: last cue ≈ video end).
 | `severin-live-trading-12-11-2026.md` | 2,590 | 1:28:32 | Sparse, quiet session. Day of the NQ pmVAL rejection then flush case. |
 
 The two sparse ones genuinely had little speech, not a partial capture (a live session has long
-stretches where Severin watches rather than talks).
+stretches where Severin watches rather than talks). Severin's latest is 12-11 (up to date).
+
+### Igor (10) — added 2026-11-18
+His own live futures sessions on NQ/ES (plus BTC and single names), 2-3 hours each, captured for the
+recent weeks: `igor-live-trading-` **06-10, 09-10, 13-10, 20-10, 23-10, 27-10, 03-11, 10-11, 13-11,
+17-11-2026**. Igor by slug. These are the richest Igor source — order flow, absorption-and-reclaim,
+market profile, and the live psychology/discipline reads. Synthesised in `../learnings/igor.md` §12.
+(The video-library `live-trading` category holds ~340 streams back to 2025; only the recent Igor set
+was pulled. The 36 Igor *trade-recaps* have no captions — see `igor-recaps/`.)
 
 ## Daily updates (`daily-update/`) — 28 files: 17 Severin, 4 Igor, 7 Severin BTC
 
@@ -114,11 +124,65 @@ Live). Trading Bias Part 1 has no self-ID and is attributed to Severin by pairin
 All captured in English. These lessons carry multiple subtitle tracks (including Spanish); the English
 track is selected explicitly and coverage is checked against the video duration.
 
-Not yet captured (later round): the other 17 course modules in `/courses` (Beginners, Basic, Entering
-Trades, Trading Psychology, Indicators and Tools, Fibonacci, Channels and Patterns, Beginner and
-Intermediate Strategies, Orderflow and Footprint, Atas, Quantower, TPO Series, Futures and Stocks,
-Statistics/Journaling, and two more). These are general multi-coach modules; the lesson pages do not
-label the presenter, so pulling any further Severin/Igor/Daniel lessons needs a per-lesson voice audit.
+### All `/courses` modules (full sweep, 2026-11-17)
+
+The remaining 17 modules were swept per lesson. The lesson pages do not label the presenter, so
+attribution follows the hard rule: a champ name only on an explicit portal slug or a self-ID in the
+transcript, else `unattributed` (the file then carries an `attribution_note`). Almost every lesson
+here is `unattributed` — these are general multi-coach modules.
+
+| Module | Files | Attributed |
+|---|---|---|
+| `beginners` | 6 | — |
+| `basic` | 9 | 06, 07 market-structure = **Severin** (slug) |
+| `entering-trades` | 9 | — |
+| `trading-psychology` | 5 | — |
+| `indicators-and-tools` | 14 | — |
+| `fibonacci` | 11 | — |
+| `channels-and-patterns` | 13 | — |
+| `beginner-strategies` | 9 | — |
+| `intermediate-strategies` | 13 | 07–09 severin-altcoin-strategy = **Severin** (slug) |
+| `orderflow-and-footprint` | 9 | — |
+| `atas` | 10 | — |
+| `quantower` | 2 | — |
+| `tpo-series` | 15 | — |
+| `futures-and-stocks` | 11 | — (making-the-move-to-stocks = **Daniel**, filed under `contender-sessions/`) |
+| `statistics-and-journaling` | 7 | 08 severins-statistics-building = **Severin** (slug) |
+| `advanced-strategies` | 19 | — |
+| `elliott-waves` | 12 | — |
+
+Captured in English (lessons carry a Spanish track too; the English track is selected explicitly and
+coverage is checked against video duration). The parent session's earlier guesses that TPO parts
+11–13, Advanced `sequence`, and `statistics-building-part-1` were Igor/Severin did **not** hold up
+under the transcript (no self-ID, zero or trivial mention counts), so they are left `unattributed`
+with a note.
+
+**Eight lessons have no retrievable transcript** — their subtitle `.vtt` returns CDN 403
+(AccessDenied) for the native player too, so no captions exist to capture: `candle-structure-formation`
+(TPO); `templates-and-live-strategies`, `value-importance-part-1`, `value-importance-part-2`,
+`long-term-stock-market-strategy-part-1/2/3` (Futures); `correlations-in-trading` (Statistics). The
+three long-term-stock-market-strategy parts are investing content with no captions — flagged for the
+investing pillar.
+
+## Investing (`investing/`)
+
+The **Investing and Diversifying** roundtable series, 5 parts (`01..05-investing-and-diversifying*.md`),
+captured in English. Co-hosted coach roundtables (Severin co-hosts; Igor and Scott join part 4) on the
+long-term stocks/ETF book: an AI "value investing model", a TradingView stock screener for the universe,
+ETF/DCA diversification, dividend reinvestment, laddering pullbacks. All left `unattributed` (no self-ID;
+the AI-model presenter quotes both Severin and Igor in the third person, so he is neither). The synthesis
+and the synthesis are in `../learnings/investing.md`. Related: the `ai-for-stock-analysis` lesson under
+`courses/futures-and-stocks/` teaches the same model, and the Vault cheat sheet **"Master Instruction
+Block"** (its packaged prompt) was pulled to `master-instruction-block.md` here — whose watchlist file is
+headed `TOP PICS 2026 (BY IGOR)`, confirming the 2026 stock picks are **Igor's**.
+
+## Igor trade-recaps (`igor-recaps/`)
+
+Checked all 37 Igor recaps in the video-library `trade-recaps` category (2026-11-17). **Only 1 of 37 has
+a subtitle track** (`nq-trade-recap-by-igor-2024-05-03`, captured); the other 36 are un-captioned short
+scalp recaps and cannot be transcribed via subtitles. See `igor-recaps/README.md`. Igor's method is
+covered instead by `contender-sessions/market-profile-and-dsf.md`, the 4 Igor dailies, and
+`../learnings/igor.md`.
 
 ## How this feeds the learnings
 
@@ -126,4 +190,6 @@ label the presenter, so pulling any further Severin/Igor/Daniel lessons needs a 
 champ's method from these transcripts, cross-linked to `../live-reads.md` and
 `../live-reads-trades.md`, and flagging where a transcript confirms or contradicts the earlier
 trade-log reads. `severin.md` is the deep pass (all Champions streams, all 17 dailies, the 7 BTC
-dailies, the lesson, and the live-trading streams).
+dailies, the Building Plans & Context lessons, the live-trading streams, and — folded in 2026-11-17 —
+his three-part **altcoin strategy** (§19) and the **statistics building** course (§20)). The 5-part
+Investing and Diversifying series feeds `../learnings/investing.md` (the investing pillar).

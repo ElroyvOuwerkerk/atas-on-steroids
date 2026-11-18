@@ -178,9 +178,154 @@ These align with `../indicator-backlog.md` and the live DSF/HMD depth-history wo
 facts (`atas-depth-history-hmd` in memory). Live, an ATAS indicator only receives about twenty prices
 a side of the book, which limits how much of Igor's DSF read can be reproduced in real time.
 
+## 11. Investing / asset screening — Igor's 2026 picks, confirmed from the Vault
+
+Elroy's hunch was that **Igor** built an AI method to find interesting assets and ETFs (stronger than
+Elroy's own Sproutly). It holds up. The transcripts alone were ambiguous (in the Investing and
+Diversifying roundtables the presenter who says "my model" quotes Igor in the third person, and the
+`ai-for-stock-analysis` lesson is unsigned). But the **Vault "Master Instruction Block" package**
+(downloaded 2026-11-17 with Elroy's OK) settles it: its TradingView watchlist file is headed
+**`###TOP PICS 2026 (BY IGOR)`** — ~50 tickers across sectors, Igor's own 2026 research list. So **Igor's
+asset picks are real and named in the artifact.** The companion tool is the **Structured Equity Analysis
+Model** (a fixed 9-step LLM prompt with a 1-5 rubric and conviction bands); that prompt PDF carries no
+author line, so it is best described as the scoring engine bundled with Igor's picks. Full verbatim prompt
+and watchlist: `../transcripts/investing/master-instruction-block.md`; synthesis in `investing.md`. Note
+this corrects an earlier transcript-only read that had called the method "not Igor's".
+
+## 12. Live trading: how he actually trades the open (10 sessions, Oct-Nov 2026)
+
+Source: the ten `../transcripts/live-trading/igor-live-trading-*` streams (06-10 through 17-11-2026),
+his own live futures sessions on NQ/ES (plus BTC and single names like NVDA/AMD). These are where the
+non-mechanical edge shows, which is why Elroy wanted them. Attributed to Igor by the `igor-live-trading`
+slug. 2-3 hours each; this section is synthesised from the portal Highlights of all ten.
+
+### The method he runs live
+- **Minimal, functional chart:** VWAP and anchored VWAP (re-anchored from session lows or from a "box
+  flip"), opening range (often a 1-minute ORB drawn on a 30-min chart), market profile (value area
+  high/low, POC, untested/naked POC, single prints, P/B shapes, A/B/C/D sessions, Initial Balance),
+  50/100/200 SMAs (and the weekly 200 SMA as a macro line), Fibonacci quartiles, delta/CVD,
+  footprint/DOM/bookmap, options open-interest walls, and DeMark Sequential 9/13 exhaustion counts. He
+  stresses simple tools *in confluence*, never in isolation (03-11, 06-10).
+- **Confluence stacking:** a level earns a trade when several cluster - prior-day POC + prior-day value
+  + ORB + VWAP + round number + untested POC (09-10, 10-11, 13-11). An untested/naked POC is a magnet he
+  targets to the tick (20-10, 13-11).
+- **His signature entry - absorption-and-reclaim** (17-11, 20-10, 23-10): find an area of interest;
+  watch large sell orders getting filled while price refuses to drop (absorption); draw a trendline
+  across the absorption highs; wait for a break and hold above that neckline; confirm with a spiking
+  inverted delta (buyers stepping in); stop below the swept/absorption low; target >=2:1 to the next
+  resistance. On 23-10 he ran it live against a 2,338-lot resting order.
+- **Other setups he names:** ORB breakout/retest with measured T1/T2/T3 extensions; the **15-minute
+  retest** (after the opening bar, the retest of the prior 15-min bar's open/close is his
+  highest-probability continuation in a trend, 20-10); halfback rotations; momentum off bull/bear flags
+  (a 45-degree trendline on the consolidation, 09-10); one-to-one extensions scaled at 75% (27-10).
+  Reclaims are validated by **one-minute closes** above/below the level, not intra-bar spikes (03-11,
+  27-10). The "75% rule": expect a pullback near 75% of the prior 15-min bar, with 25% as continuation
+  support (20-10).
+- **Targets:** untested POC, gap fills, value-area rotation, left-behind imbalances, and overnight
+  highs/lows as draws on liquidity.
+
+### The real edge: discipline, patience, psychology (the "watch him live" part)
+- **The Lemon Shop analogy:** limit your operating hours; fatigue and overtrading wreck decision
+  quality, so he defines a clear session end to stop giving profits back (06-10). "Markets will be here
+  tomorrow - no need to force trades" (20-10).
+- **Let the market provide trades, don't hunt them** (03-11). One quality trade per session beats many
+  low-conviction entries; if nothing sets up, walk away (06-10, 10-11).
+- **"It either works or it does not."** Define risk (~$150/lot) and reward (300+) up front and strip the
+  emotional attachment from the outcome (20-10).
+- **Don't fight the market.** "A reversal is a pullback within a trend" (23-10). His own psychological
+  pivot - from reversal-trading against the trend to disciplined momentum-with-bias - is what
+  "dramatically improved consistency" (06-10). Counter-trend only on a confirmed structure shift; he'll
+  reject a counter-trend long purely on the ~$400/contract risk against the dominant trend (13-11).
+- **Emotional discipline after a missed trade:** stay calm, process it objectively; hindsight clarity
+  does not mean the trade was executable in real time (20-10).
+- **Account size as a psychology tool:** ~$1,000 minimum on MNQ, $2,500 reasonable, $5,000 preferred -
+  so watching P&L doesn't drive execution (27-10).
+- **Consistency over size:** modest, repeatable profits ($100-300) are the foundation; small consistent
+  gains "pay for the tuition" and compound the skill (09-10, 17-11).
+- **Late vs early:** "there is always a next trade" - entering after confirmation at a slightly worse
+  price with clearer structure beats being early into an unclear setup; never chase, the first
+  resistance is usually the prior swing high (10-11, 17-11).
+- **Stand-aside signals (no-trade zones):** a flat or down-sloping VWAP, opening at equilibrium (the EQ
+  midpoint removes directional confluence), and the midpoint of a range are all low-probability - he
+  walks away until a level flips (03-11, 13-11, 20-10).
+- **Tempo read:** slow tempo *into* a level signals exhaustion/reversion; high tempo pierces through;
+  stops triggering confirms an expansion phase (27-10).
+- **Risk discipline at the open:** after an early profit, size down and get cautious to avoid handing it
+  back (10-11).
+
+### Live trade management
+- Scale partials at defined targets; move to breakeven once momentum confirms; then trail on structure.
+- He trails by **placing a resting market stop below the swing low** (for longs) rather than manually
+  nudging it, so a structure break auto-exits (20-10). Two-bar / one-time-framing: hold while price
+  keeps one-time-framing in your direction; a break of the prior bar reverses the sequence (20-10).
+- Instrument split: on ES he lets trades cook to target and trails two bars back; on NQ he takes quicker
+  1-minute-structure entries when ES is hitting a key level (17-11). Reads delta-vs-price divergence
+  (rising price, weak/again negative CVD) as a cue to take profit rather than hold (06-10, 10-11, 17-11).
+
+### In his own words (the live texture, from full reads of 06-10, 20-10, 27-10)
+
+This is the part you only get by watching him trade, and it is mostly psychology and process.
+
+- **The Lemon Shop, in full (06-10).** A trading day is a lemon stall with fixed opening hours. Each
+  partial booked is "selling a lemon"; the first customer leaving is the first scale-out. When the
+  session target is done: "you've sold all the lemons, there's no more lemons to be sold, now just get
+  up, and tomorrow you come back and do exactly the same thing." Between sessions: "skip London, go
+  drive your car, check the wheels, then come back on New York and wait for that nice momentum trade and
+  boom, hit it." The whole point is the hard stop - "shop is closed, you walk away, otherwise a lot of
+  traders will be in a good day and then give it all back." He notes closing the shop on a trending day
+  "is a challenge in itself," which is exactly why he drills it.
+- **Absorption-and-reclaim, narrated live (20-10).** "Two massive sell orders, price absorbed, draw a
+  trendline... that's a playbook." His mental image: "whoever is selling there, there's a bigger play on
+  the other side saying, yeah, you can sell everything you have, give me all your lemons, I'm gonna eat
+  them all - then price pushes through and you want to see that delta invert instantly, boom, massive
+  delta spike, and you put your stop literally below that low." Stops: one or two ticks below the
+  absorption low (he showed lows at 62/63 -> stop below 62). Risk ~$150/lot to make at least $300.
+- **The one risk mantra:** "In your head, this is all you have to say to yourself: it either works or it
+  does not." He takes scalp longs "to let it cook, and if it doesn't, I'm out - I don't need to be
+  overly long exposed" (20-10). Trailing is non-negotiable and mechanical: "always trail," by moving a
+  resting market stop two candles back as price one-time-frames (20-10).
+- **Why momentum beats reversals, shown by a real member (06-10).** A member (MES) who was "down big
+  yesterday" finished "up today"; pressed on what changed, the answer was trading *with* the trend plus
+  the lemon discipline instead of fading it. Igor: "reversal trading can be psychologically really
+  tiring because you're literally going against the trend all the time." His low-pain-threshold logic:
+  "we don't like to be in drawdown, so get in when the market is already moving, your stop only a few
+  points away - psychologically it feels good. If you don't see it on Monday, walk away. If it comes
+  Wednesday, risk 10-15 points and get 30."
+- **Patience, in a member's own words (27-10).** A member: "watching the live price action, I have
+  suppressed the urge to jump into all kinds of trades - that's why I value these live trading sessions,
+  it teaches me to be patient." Igor "practices what he preaches," skipping his own would-be entries
+  when structure is poor ("this was not really in the books to be a buy here; I'd have preferred to see
+  it lower"). The common error he names: "everybody is a bit too early or too late, and then their stop
+  is tapped."
+- **Tap vs reach / tempo (27-10).** "I consider that a tap, because it's at slow tempo - if it was high
+  tempo it would have gone through; slow tempo means not many people are actively going for it." Stops
+  triggering is how he confirms an expansion phase.
+- **Account size as a psychology tool (27-10), verbatim:** "$1,000 minimum, $2,500 reasonable, $5,000
+  perfect, and build from there - so you're not relying on it, you just focus on the high-probability
+  setups" without P&L-watching driving the trade.
+- **"Only what makes sense" + visual over numbers (06-10).** "I only trade what makes sense to me; if it
+  doesn't make sense, I don't touch it." On his Delta bars vs raw footprint numbers: "your brain can't
+  compute all of that, you're not a cyborg - with the visual bars it becomes easier, because price
+  follows delta."
+- **The mindset talk (06-10).** An unprompted stretch on the psychology of success and jealousy -
+  surround yourself with good energy, drop people who bring you down - and, quoting Severin, "compare
+  yourself with yourself." On the timeline: "go at your own pace; if it takes five years, so be it...
+  like a car journey, the people who speed have accidents, the one who goes slow and steady gets from A
+  to B with no problems." He also encourages member accountability (one member journaling publicly:
+  "talk about accountability and transparency, that's really nice").
+
+### How this connects to the indicator work
+This is the live companion to `AbsorptionSqueeze.cs` and the `igor-dsf-method` note: the
+absorption-and-reclaim model (resting sell orders absorbed -> trendline break -> inverted-delta
+confirmation -> stop below the low -> 2:1) is exactly codeable as a signal, and the untested-POC magnet,
+the one-minute-close reclaim trigger, and the 15-minute-retest continuation are all discrete, testable
+rules. Nothing here is backtested - same caveat as the rest of igor.md.
+
 ## Open items
 
-- These four dailies and the one lesson are the Igor material captured in the window. His dealer-
+- Igor material captured: 4 morning-update dailies, the DSF/market-profile lesson, and (added
+  2026-11-18) 10 live-trading streams (Oct-Nov 2026, section 12). The 36 un-captioned Igor trade-recaps
+  could not be transcribed (no subtitle tracks). His dealer-
   positioning and options-gamma read (the DSF "dealer levels" that Severin cites off the shared sheet)
   is referenced here but not fully transcribed; the deeper dealer-gamma method lives in the
   `igor-dsf-method` memory note and the order-flow notes rather than in a single captured lesson.

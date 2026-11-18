@@ -19,6 +19,14 @@ This is the deep pass. It draws on the full set of Severin material captured in 
   and How/when to modify your plan. These lessons are the systematic foundation (sections 14-18 below);
   the 30-day application above shows how he uses it. The three Traders Checklist lessons in that course
   are Daniel's, not Severin's, and are in `daniel.md`.
+- the three-part **Severin Altcoin Strategy** course
+  (`../transcripts/courses/intermediate-strategies/07..09-severin-altcoin-strategy-part-1..3.md`): his dedicated
+  crypto-altcoin method (section 19 below). He self-identifies ("part one of my altcoin strategy") and the
+  slugs name him.
+- the **Statistics Building** course (`../transcripts/courses/statistics-and-journaling/`):
+  `08-severins-statistics-building-part-2` (his, by slug and his own words) plus `07-statistics-building-part-1`
+  (same voice and same Excel file, left `unattributed` only because its slug carries no name marker and he
+  never says his name). Section 20 below.
 
 Timestamps reference each file's `## Transcript` and the portal's own Highlights index. Igor's four
 dailies are synthesized separately in `igor.md`; the stocks Contender lesson is Daniel's and is in
@@ -443,8 +451,101 @@ which is the point for the LevelTrigger / scoreboard work.
   after three (Scalping Execution [03:07]); plus the TP ladders and the with/against-trend allocation
   (Scalping Execution [04:01]).
 
+## 19. The altcoin strategy (course)
+
+His dedicated crypto-altcoin method, a three-part Intermediate Strategies course. Day and swing trading
+with deliberately simple TA ("no fancy tool is needed"). He opens each part with "my altcoin strategy"
+and the slugs name him. Sources: `07..09-severin-altcoin-strategy-part-1..3`.
+
+- **Finding candidates (Part 1 [1:38]).** Bybit Market Overview, sorted by 24-hour % change and by 24-hour
+  volume; a coin that moved big *on* real volume goes on the watchlist. Scan regularly, note the intriguing
+  ones, narrow ~5-10 for deep analysis, filter to 3-5 tradable. Vault cheat sheet "Altcoin Trading Strategy".
+- **Correlation / bias order (Part 1 [4:29], Part 3 [2:56]).** Analyse **Bitcoin first** (direction and bias),
+  then **Ethereum** (the largest alt, it drives the small caps), then the small caps. Never counter-trade the
+  BTC/ETH bias; only take alt setups aligned with both.
+- **Price-location triage (Part 1 [5:47]).** Middle of the range → skip (the .25 range tool / a 0.25 Fib pulled
+  high-to-low shows it). A significant retrace to a range edge → candidate fade. A significant impulsive move →
+  deeper look, but he skips pure hype pumps (ILV, INJ in the live walkthrough).
+- **Confluence stack (Part 1 [7:10], Part 3 throughout).** HTF levels (monthly/weekly/daily) + fixed-range
+  VAH/VAL (POC only when it aligns with other confluence) + CC / CCW (correction channel) + anchored VWAP +
+  naked POC on Exocharts + SFP / liquidity + Fib (0.5, 0.70, 0.786, .25 range). A key level earns a trade only
+  with several layers stacked (ARPA = weekly + VAH + SFP; XRP swing = two fixed-range POCs + CC + naked weekly
+  POC + anchored VWAP, 4.8R).
+- **Entry types (Part 2).** Five, matched to trade type and conditions: **limit order** (mostly to hedge a
+  winner or when he can't watch the chart; laddered), **candle close** (confirmation; mandatory for SFPs; 4h
+  close for swing, 30m-1h for day), **confirmed market-structure change** (conservative; needs the 3-pivot
+  HH-HL-HH / LL-LH-LL, distinct from a CCW), **CCW retest** (systematic; wait for the CCW Fib retest after a
+  confluence tap), **orderflow-based** (day/scalp; the initial touch of a level or timing a reversal, e.g.
+  losing a naked-POC note then backtesting it). Rule of thumb (Part 3 [11:34]): **with-trend intraday → candle
+  close; counter-trend swing → confirmed 4H MS change.**
+- **Reference level + combined trigger (Part 3 [43:03]).** On the AVAX swing short he combines two conditions:
+  a **daily candle close below a "reference level"** (a level he classes as a sign of weakness if closed below)
+  AND a **confirmed 1H MS change** (LL, LH, break of the pivot low). TP1 at the prior-high / daily-POC flip,
+  TP2 the weekly below, taking profit along the way.
+- **Sizing and viability.** TradingView R:R tool, minimum **2:1** (live examples 2.5R and 4.8R); size via
+  Bybit's limit feature for **1% portfolio risk** per coin; the USDT pair drives entry and stop, the BTC pair is
+  only a light cross-check.
+- **Tips.** Only trade alts after real Bitcoin experience; be okay missing trades; be strict on entry criteria;
+  journal which entry types fit you; keep it simple. He frames the whole thing as "a flexible framework, a
+  guiding light rather than a rigid set of rules" (Part 3 [45:06]).
+
+What maps to an indicator: the confluence stack and the two-condition trigger are the same shape as the
+LevelTrigger work — a level earns a trade only with N confluence layers, and entry fires on
+candle-close-below-reference plus a confirmed MS change. The BTC → ETH → alt bias order is a market-context gate.
+
+## 20. Statistics building (course)
+
+A two-part Statistics and Journaling course on how he builds his trade statistics. Part 2 is his by the slug
+and his own words ("my daily open statistics", "my Excel file", "my time now, Central European time"); Part 1
+(slug `statistics-building-part-1`) has no name marker so it stays `unattributed`, but it is the same voice and
+the same Excel file and is almost certainly his. Directly relevant to the trading-journal and the LevelTrigger
+scoreboard. Sources: `07-statistics-building-part-1`, `08-severins-statistics-building-part-2`.
+
+**Foundations (Part 1).**
+- An **edge** is a repeatable pattern with a measurable statistical advantage, proven over hundreds of
+  observations, not a win streak. A loss never invalidates an edge that has positive expectancy.
+- He only keeps setups with a **≥60-65% win rate**, not low-win-rate / high-R:R ones, because high-probability
+  setups let him manage flexibly (even 1:1 stays profitable). No setup is 100%.
+- **Static level vs playbook:** a static level is a fixed reference (daily open, PDH, PDL) and tells you *where*;
+  a playbook adds context and conditions and tells you *when, why, how*. Most statistics start as a static level
+  and grow into a playbook.
+- **Minimum 200 observations** before a statistic means anything. Do the backtesting yourself (it builds pattern
+  recognition); stay objective and never manipulate the result. He says he hates doing it but does it anyway.
+
+**Preparation and the Excel framework (Part 2).**
+- Prepare before collecting: a written backtesting plan (detailed enough to still make sense years later), the
+  Excel document (in the Vault under "statistics building"), and a dedicated TradingView/ATAS workspace per
+  statistic, with **holidays** and **NY-open daylight-saving changes** marked and excluded — reduced-liquidity
+  holidays and the 3:30 ↔ 2:30 CET NY-open shift both distort session stats (the holiday list was built "by AI").
+- **PDVAL study (previous-day value-area-low) rules:** include only days where the daily open is inside the
+  previous day's value area; record only the *first* touch of PDVAL on the following session; exclude days whose
+  30-minute opening candle already tags the level (no valid entry); later touches are a separate study.
+- **Excel fields:** observation #, asset (NQ/ES/BTC), level/playbook name, timeframe, context (up/down/range),
+  session (London/NY), win/loss, deviation above/below in ticks, move-away in ticks. **A win = a follow-through
+  of roughly 2:1 away from the level.**
+- **Entry-level stats (optional, the real payoff):** log the 3-candle entry (COT/COC/momentum/none) on 1m and 5m
+  with SL/TP in ticks; an analysis tab then returns the win probability per session per entry type ("1-min COT in
+  NY session at PDVAL = X%"). Same COT/COC/Momentum taxonomy as section 18 — the statistics file is where those
+  triggers get their measured probabilities.
+- **Context-only studies (daily-open quartile):** no trade tracked, just a probability for the daily plan. Use
+  the .25 Fib tool to split the previous day's range into quartiles; include only days whose daily open is in the
+  upper or lower quartile; record whether price trades above PDH / below PDL anywhere in ETH. No session, entry or
+  R:R.
+- **Framework principles:** structure before data; the same framework for every observation; consistency over
+  complexity; start each study **neutral** (make the market prove the level, never set out to prove it works);
+  keep variables minimal and layer complexity in later. A summary tab aggregates every probability and count.
+
+What maps to an indicator: this is the measurement layer under everything else. The COT/COC/Momentum trigger
+(section 18) and the zone/level work only become an "edge" once run through ≥200 observations with ticks, session
+and context recorded; the daily-open-quartile and PDVAL studies are concrete static-level statistics worth
+reproducing in the journal.
+
 ## Open items
 
+- The altcoin and statistics-building courses were folded in on 2026-11-17. The altcoin three-parter is
+  Severin's by slug and self-ID; `severins-statistics-building-part-2` is his by slug; `statistics-building-part-1`
+  is left `unattributed` (same voice and Excel file, but no name marker on the slug and no self-ID) — treat it as
+  his only with that caveat.
 - The Building Plans & Context course was captured in full (13 lessons). Attribution was checked per
   lesson from the transcripts, not assumed: ten are Severin's (Trading Bias 1-2, Context-Volume-Tips,
   the Scalping and 3-Candle series, Modify Plan), and the three Traders Checklist lessons are
